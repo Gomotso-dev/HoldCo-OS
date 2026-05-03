@@ -1,0 +1,193 @@
+{
+  "entities": {
+    "companies": {
+      "title": "Company",
+      "description": "A legal entity within the group.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier (UUID)" },
+        "name": { "type": "string", "description": "Legal name of the company" },
+        "tradingName": { "type": "string", "description": "Trading name if different" },
+        "type": { "type": "string", "enum": ["HoldCo", "Subsidiary", "Associate", "Other"] },
+        "registrationNumber": { "type": "string", "description": "Official registration number" },
+        "incorporationDate": { "type": "string", "format": "date" },
+        "taxNumber": { "type": "string" },
+        "vatNumber": { "type": "string" },
+        "payeNumber": { "type": "string" },
+        "uifNumber": { "type": "string" },
+        "financialYearEnd": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "Dormant", "Pending", "Closed"] },
+        "notes": { "type": "string" },
+        "owner_id": { "type": "string", "description": "The user who owns this record" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "type", "registrationNumber", "incorporationDate", "financialYearEnd", "status", "owner_id"]
+    },
+    "compliance": {
+      "title": "Compliance Item",
+      "description": "A legal or tax obligation for a company.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier (UUID)" },
+        "companyId": { "type": "string", "description": "Reference to the company" },
+        "type": { "type": "string" },
+        "title": { "type": "string" },
+        "dueDate": { "type": "string", "format": "date" },
+        "reminderDate": { "type": "string", "format": "date" },
+        "priority": { "type": "string", "enum": ["Low", "Medium", "High"] },
+        "status": { "type": "string", "enum": ["Pending", "In Progress", "Submitted", "Completed", "Overdue", "Cancelled"] },
+        "linkedDocumentId": { "type": "string" },
+        "notes": { "type": "string" },
+        "owner_id": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["companyId", "title", "dueDate", "priority", "status", "owner_id"]
+    },
+    "documents": {
+      "title": "Document",
+      "description": "A file or record associated with a company.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier (UUID)" },
+        "companyId": { "type": "string", "description": "Reference to the company" },
+        "category": { "type": "string" },
+        "title": { "type": "string" },
+        "fileUrl": { "type": "string" },
+        "fileType": { "type": "string" },
+        "versionNumber": { "type": "integer" },
+        "issueDate": { "type": "string", "format": "date" },
+        "expiryDate": { "type": "string", "format": "date" },
+        "uploadedBy": { "type": "string" },
+        "notes": { "type": "string" },
+        "owner_id": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["companyId", "category", "title", "owner_id"]
+    },
+    "finance": {
+      "title": "Finance Transaction",
+      "description": "A financial transaction record.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier (UUID)" },
+        "companyId": { "type": "string", "description": "Reference to the company" },
+        "date": { "type": "string", "format": "date" },
+        "type": { "type": "string", "enum": ["Income", "Expense", "Owner Contribution", "Loan", "Intercompany Transfer", "Dividend", "Tax Payment", "Bank Charge", "Other"] },
+        "category": { "type": "string" },
+        "amount": { "type": "number" },
+        "description": { "type": "string" },
+        "paymentMethod": { "type": "string" },
+        "counterparty": { "type": "string" },
+        "referenceNumber": { "type": "string" },
+        "linkedDocumentId": { "type": "string" },
+        "owner_id": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["companyId", "date", "type", "amount", "description", "owner_id"]
+    },
+    "activity_log": {
+      "title": "Activity Log",
+      "description": "A record of an action taken within the system.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier (UUID)" },
+        "userId": { "type": "string", "description": "The user who performed the action" },
+        "eventType": { "type": "string", "description": "e.g. 'create', 'update', 'delete', 'upload'" },
+        "entityType": { "type": "string", "description": "e.g. 'company', 'compliance', 'document', 'finance'" },
+        "entityId": { "type": "string", "description": "The ID of the affected record" },
+        "description": { "type": "string", "description": "Human-readable description of the action" },
+        "companyId": { "type": "string", "description": "Optional reference to a company" },
+        "owner_id": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "eventType", "entityType", "description", "owner_id"]
+    },
+    "shareholders": {
+      "title": "Shareholder",
+      "description": "A person or entity owning shares in a company.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "companyId": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["Person", "Entity"] },
+        "ownershipPercentage": { "type": "number" },
+        "shareClass": { "type": "string" },
+        "issueDate": { "type": "string", "format": "date" },
+        "notes": { "type": "string" },
+        "owner_id": { "type": "string" }
+      },
+      "required": ["companyId", "name", "type", "ownershipPercentage", "shareClass", "issueDate", "owner_id"]
+    },
+    "directors": {
+      "title": "Director",
+      "description": "A person appointed as a director of a company.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "companyId": { "type": "string" },
+        "fullName": { "type": "string" },
+        "roleTitle": { "type": "string" },
+        "appointmentDate": { "type": "string", "format": "date" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "owner_id": { "type": "string" }
+      },
+      "required": ["companyId", "fullName", "roleTitle", "appointmentDate", "owner_id"]
+    },
+    "beneficial_owners": {
+      "title": "Beneficial Owner",
+      "description": "A person who exercises ultimate control or ownership.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "companyId": { "type": "string" },
+        "fullName": { "type": "string" },
+        "controlType": { "type": "string" },
+        "ownershipPercentage": { "type": "number" },
+        "effectiveDate": { "type": "string", "format": "date" },
+        "status": { "type": "string", "enum": ["Active", "Inactive"] },
+        "notes": { "type": "string" },
+        "owner_id": { "type": "string" }
+      },
+      "required": ["companyId", "fullName", "controlType", "ownershipPercentage", "effectiveDate", "status", "owner_id"]
+    }
+  },
+  "firestore": {
+    "companies": {
+      "schema": "companies",
+      "description": "Collection of all companies managed by the user."
+    },
+    "compliance": {
+      "schema": "compliance",
+      "description": "Collection of all compliance deadlines."
+    },
+    "documents": {
+      "schema": "documents",
+      "description": "Collection of all company documents."
+    },
+    "finance": {
+      "schema": "finance",
+      "description": "Collection of all financial transactions."
+    },
+    "activity_log": {
+      "schema": "activity_log",
+      "description": "Audit trail of all system activities."
+    },
+    "shareholders": {
+      "schema": "shareholders",
+      "description": "Collection of company shareholders."
+    },
+    "directors": {
+      "schema": "directors",
+      "description": "Collection of company directors."
+    },
+    "beneficial_owners": {
+      "schema": "beneficial_owners",
+      "description": "Collection of beneficial owners."
+    }
+  }
+}
