@@ -87,15 +87,15 @@ export default function Compliance() {
 
   // Form state
   const initialFormState = {
-    companyId: '',
+    company_id: '',
     category: 'Other' as ComplianceItem['category'],
     type: '',
     title: '',
-    dueDate: format(new Date(), 'yyyy-MM-dd'),
-    reminderDate: '',
+    due_date: format(new Date(), 'yyyy-MM-dd'),
+    reminder_date: '',
     priority: 'Medium' as ComplianceItem['priority'],
     status: 'Pending' as ComplianceStatus,
-    linkedDocumentId: '',
+    linked_document_id: '',
     notes: ''
   };
   const [formData, setFormData] = useState(initialFormState);
@@ -140,12 +140,12 @@ export default function Compliance() {
         .from('compliance')
         .select(`
           *,
-          companies!companyId (
+          companies!company_id (
             name
           )
         `)
         .eq('owner_id', user.id)
-        .order('dueDate', { ascending: true });
+        .order('due_date', { ascending: true });
 
       if (complianceRes.error) {
         console.error('Compliance fetch error:', complianceRes.error);
@@ -166,7 +166,7 @@ export default function Compliance() {
     setFormData({
       ...initialFormState,
       category: category || 'Other',
-      companyId: selectedCompanyId !== 'all' ? selectedCompanyId : ''
+      company_id: selectedCompanyId !== 'all' ? selectedCompanyId : ''
     });
     setIsModalOpen(true);
   }
@@ -175,15 +175,15 @@ export default function Compliance() {
     setIsEditMode(true);
     setEditingId(item.id);
     setFormData({
-      companyId: item.companyId,
+      company_id: item.company_id,
       category: item.category || 'Other',
       type: item.type || '',
       title: item.title,
-      dueDate: item.dueDate,
-      reminderDate: item.reminderDate || '',
+      due_date: item.due_date,
+      reminder_date: item.reminder_date || '',
       priority: item.priority,
       status: item.status,
-      linkedDocumentId: item.linkedDocumentId || '',
+      linked_document_id: item.linked_document_id || '',
       notes: item.notes || ''
     });
     setIsModalOpen(true);
@@ -199,29 +199,29 @@ export default function Compliance() {
 
       const timestamp = new Date().toISOString();
       
-      // Ensure specific fields are used and handle linkedDocumentId correctly
+      // Ensure specific fields are used and handle linked_document_id correctly
       const payload: any = {
-        companyId: formData.companyId,
+        company_id: formData.company_id,
         category: formData.category,
         type: formData.type || null,
         title: formData.title,
-        dueDate: formData.dueDate,
-        reminderDate: formData.reminderDate || null,
+        due_date: formData.due_date,
+        reminder_date: formData.reminder_date || null,
         priority: formData.priority,
         status: formData.status,
-        linkedDocumentId: formData.linkedDocumentId || null,
+        linked_document_id: formData.linked_document_id || null,
         notes: formData.notes || null,
-        updatedAt: timestamp
+        updated_at: timestamp
       };
 
       if (isEditMode && editingId) {
         // Explicit fields for update as per requirement
         const updatePayload = {
-          dueDate: payload.dueDate,
+          due_date: payload.due_date,
           status: payload.status,
           notes: payload.notes,
-          linkedDocumentId: payload.linkedDocumentId,
-          updatedAt: timestamp
+          linked_document_id: payload.linked_document_id,
+          updated_at: timestamp
         };
 
         const { error: updateError } = await supabase
@@ -235,9 +235,9 @@ export default function Compliance() {
         }
 
         await ActivityLogService.logActivity({
-          actionType: 'compliance_updated',
+          action_type: 'compliance_updated',
           description: `Updated compliance record: ${formData.title}`,
-          companyId: formData.companyId
+          company_id: formData.company_id
         });
       } else {
         const { data, error: insertError } = await supabase
@@ -245,7 +245,7 @@ export default function Compliance() {
           .insert([{
             ...payload,
             owner_id: user.id,
-            createdAt: timestamp
+            created_at: timestamp
           }])
           .select()
           .single();
@@ -257,9 +257,9 @@ export default function Compliance() {
 
         if (data) {
           await ActivityLogService.logActivity({
-            actionType: 'compliance_created',
+            action_type: 'compliance_created',
             description: `Created new compliance record: ${data.title}`,
-            companyId: data.companyId
+            company_id: data.company_id
           });
         }
       }
@@ -288,9 +288,9 @@ export default function Compliance() {
       if (error) throw error;
 
       await ActivityLogService.logActivity({
-        actionType: 'compliance_updated',
+        action_type: 'compliance_updated',
         description: `Deleted compliance record: ${itemToDelete.title}`,
-        companyId: itemToDelete.companyId
+        company_id: itemToDelete.company_id
       });
       setSuccess(`Compliance item "${itemToDelete.title}" successfully deleted.`);
       setIsDeleteModalOpen(false);
@@ -308,7 +308,7 @@ export default function Compliance() {
 
   const filteredItems = useMemo(() => {
     return complianceItems.filter(item => {
-      const matchesScope = viewScope === 'all' || selectedCompanyId === 'all' || item.companyId === selectedCompanyId;
+      const matchesScope = viewScope === 'all' || selectedCompanyId === 'all' || item.company_id === selectedCompanyId;
       const matchesSearch = 
         item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (item.companies?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -336,14 +336,14 @@ export default function Compliance() {
 
   const stats = useMemo(() => {
     const relevant = complianceItems.filter(i => 
-      viewScope === 'all' || selectedCompanyId === 'all' || i.companyId === selectedCompanyId
+      viewScope === 'all' || selectedCompanyId === 'all' || i.company_id === selectedCompanyId
     );
     const now = startOfDay(new Date());
     
     return {
-      overdue: relevant.filter(i => i.status === 'Overdue' || (i.status !== 'Completed' && isBefore(new Date(i.dueDate), now))).length,
+      overdue: relevant.filter(i => i.status === 'Overdue' || (i.status !== 'Completed' && isBefore(new Date(i.due_date), now))).length,
       upcoming: relevant.filter(i => {
-        const due = new Date(i.dueDate);
+        const due = new Date(i.due_date);
         const diff = (due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
         return diff >= 0 && diff <= 14 && i.status !== 'Completed';
       }).length,
@@ -366,7 +366,7 @@ export default function Compliance() {
         if (day.getMonth() !== start.getMonth()) break;
         
         const items = complianceItems.filter(item => {
-            const itemDate = new Date(item.dueDate);
+            const itemDate = new Date(item.due_date);
             return itemDate.getDate() === day.getDate() && 
                    itemDate.getMonth() === day.getMonth() && 
                    itemDate.getFullYear() === day.getFullYear();
@@ -393,7 +393,7 @@ export default function Compliance() {
         <tbody className="divide-y divide-gray-50">
           {items.map((item, index) => {
             const requiredDocs = item.required_documents || [];
-            const companyDocs = documents.filter(doc => doc.companyId === item.companyId);
+            const companyDocs = documents.filter(doc => doc.company_id === item.company_id);
             const foundAll = requiredDocs.length > 0 && requiredDocs.every(req => 
               companyDocs.some(doc => 
                 doc.title.toLowerCase().includes(req.toLowerCase()) || 
@@ -428,7 +428,7 @@ export default function Compliance() {
                     <span className="text-xs font-black text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-1">{item.companies?.name}</span>
                     <div className="flex items-center text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
                       <span className="mr-2">{item.category}</span>
-                      {item.linkedDocumentId && <LinkIcon className="h-2.5 w-2.5 text-indigo-400" />}
+                      {item.linked_document_id && <LinkIcon className="h-2.5 w-2.5 text-indigo-400" />}
                     </div>
                   </div>
                 </td>
@@ -444,11 +444,11 @@ export default function Compliance() {
                       "text-sm font-black tabular-nums",
                       item.status === 'Overdue' ? "text-red-600" : "text-gray-900"
                     )}>
-                      {formatDate(item.dueDate)}
+                      {formatDate(item.due_date)}
                     </span>
                     {item.status !== 'Completed' && (
                       <span className="text-[9px] font-bold text-gray-400 uppercase">
-                          {isAfter(new Date(item.dueDate), new Date()) ? 'Upcoming' : 'Overdue'}
+                          {isAfter(new Date(item.due_date), new Date()) ? 'Upcoming' : 'Overdue'}
                       </span>
                     )}
                   </div>
@@ -482,7 +482,7 @@ export default function Compliance() {
       <div className="md:hidden divide-y divide-gray-100">
         {items.map((item, index) => {
           const requiredDocs = item.required_documents || [];
-          const companyDocs = documents.filter(doc => doc.companyId === item.companyId);
+          const companyDocs = documents.filter(doc => doc.company_id === item.company_id);
           const foundAll = requiredDocs.length > 0 && requiredDocs.every(req => 
             companyDocs.some(doc => 
               doc.title.toLowerCase().includes(req.toLowerCase()) || 
@@ -514,7 +514,7 @@ export default function Compliance() {
                   "text-[10px] font-black uppercase tracking-widest",
                   item.status === 'Overdue' ? "text-red-600" : "text-gray-900"
                 )}>
-                  Due: {formatDate(item.dueDate)}
+                  Due: {formatDate(item.due_date)}
                 </span>
               </div>
               <div>
@@ -1077,8 +1077,8 @@ export default function Compliance() {
                       required
                       type="date"
                       className="w-full px-5 py-3.5 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-600 transition-all font-bold text-gray-900 text-sm"
-                      value={formData.dueDate}
-                      onChange={e => setFormData({ ...formData, dueDate: e.target.value })}
+                      value={formData.due_date}
+                      onChange={e => setFormData({ ...formData, due_date: e.target.value })}
                     />
                   </div>
 
@@ -1102,11 +1102,11 @@ export default function Compliance() {
                     <div className="relative">
                        <select
                           className="w-full px-10 py-3.5 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-600 transition-all font-bold text-gray-900 text-sm appearance-none"
-                          value={formData.linkedDocumentId}
-                          onChange={e => setFormData({ ...formData, linkedDocumentId: e.target.value })}
+                          value={formData.linked_document_id}
+                          onChange={e => setFormData({ ...formData, linked_document_id: e.target.value })}
                        >
                           <option value="">No Evidence Linked</option>
-                          {documents.filter(d => !formData.companyId || d.companyId === formData.companyId).map(d => (
+                          {documents.filter(d => !formData.company_id || d.company_id === formData.company_id).map(d => (
                             <option key={d.id} value={d.id}>{d.title} ({d.category})</option>
                           ))}
                        </select>
@@ -1114,10 +1114,10 @@ export default function Compliance() {
                     </div>
                     
                     {/* Display linked document evidence details */}
-                    {formData.linkedDocumentId && (
+                    {formData.linked_document_id && (
                       <div className="mt-4 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100/50">
                         {(() => {
-                          const linkedDoc = documents.find(d => d.id === formData.linkedDocumentId);
+                          const linkedDoc = documents.find(d => d.id === formData.linked_document_id);
                           if (!linkedDoc) return <p className="text-[10px] font-bold text-red-500 uppercase">Document not found in vault</p>;
                           return (
                             <div className="flex items-center justify-between">

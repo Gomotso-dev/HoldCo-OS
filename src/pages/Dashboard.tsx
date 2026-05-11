@@ -100,7 +100,7 @@ export default function Dashboard() {
       // 2. Fetch Active Deadlines Count
       const { count: deadlinesCount, data: upcomingCompliance } = await supabase
         .from('compliance')
-        .select('dueDate, status', { count: 'exact' })
+        .select('due_date, status', { count: 'exact' })
         .eq('owner_id', user.id)
         .neq('status', 'Completed');
 
@@ -116,8 +116,8 @@ export default function Dashboard() {
       
       const urgentItems = upcomingCompliance?.filter(item => {
         if (item.status === 'Overdue') return true;
-        const dueDate = new Date(item.dueDate);
-        return dueDate <= nextWeek;
+        const dueDateValue = new Date(item.due_date);
+        return dueDateValue <= nextWeek;
       }) || [];
       
       setUrgentCount(urgentItems.length);
@@ -131,7 +131,7 @@ export default function Dashboard() {
         .from('documents')
         .select('*', { count: 'exact', head: true })
         .eq('owner_id', user.id)
-        .lte('expiryDate', threshold);
+        .lte('expiry_date', threshold);
       
       let expiringDocsCount = docsRes.count;
       if (docsRes.error) {
@@ -359,23 +359,23 @@ export default function Dashboard() {
                 <div key={item.id} className="flex items-start space-x-4">
                   <div className={cn(
                     "p-2 rounded-lg",
-                    item.actionType === 'document_uploaded' ? "bg-blue-50 text-blue-600" :
-                    item.actionType === 'compliance_completed' ? "bg-emerald-50 text-emerald-600" :
-                    item.actionType === 'setup_completed' ? "bg-purple-50 text-purple-600" :
-                    item.actionType === 'company_created' ? "bg-indigo-50 text-indigo-600" :
-                    item.actionType === 'compliance_generated' ? "bg-amber-50 text-amber-600" : "bg-gray-50 text-gray-600"
+                    item.action_type === 'document_uploaded' ? "bg-blue-50 text-blue-600" :
+                    item.action_type === 'compliance_completed' ? "bg-emerald-50 text-emerald-600" :
+                    item.action_type === 'setup_completed' ? "bg-purple-50 text-purple-600" :
+                    item.action_type === 'company_created' ? "bg-indigo-50 text-indigo-600" :
+                    item.action_type === 'compliance_generated' ? "bg-amber-50 text-amber-600" : "bg-gray-50 text-gray-600"
                   )}>
-                    {item.actionType === 'document_uploaded' ? <Files className="h-4 w-4" /> :
-                     item.actionType === 'compliance_completed' ? <CheckCircle2 className="h-4 w-4" /> :
-                     item.actionType === 'setup_completed' ? <ShieldCheck className="h-4 w-4" /> : 
-                     item.actionType === 'company_created' ? <Building2 className="h-4 w-4" /> : 
-                     item.actionType === 'compliance_generated' ? <Clock className="h-4 w-4" /> : <ArrowRightLeft className="h-4 w-4" />}
+                    {item.action_type === 'document_uploaded' ? <Files className="h-4 w-4" /> :
+                     item.action_type === 'compliance_completed' ? <CheckCircle2 className="h-4 w-4" /> :
+                     item.action_type === 'setup_completed' ? <ShieldCheck className="h-4 w-4" /> : 
+                     item.action_type === 'company_created' ? <Building2 className="h-4 w-4" /> : 
+                     item.action_type === 'compliance_generated' ? <Clock className="h-4 w-4" /> : <ArrowRightLeft className="h-4 w-4" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-gray-900 truncate">{item.description}</p>
                     <p className="text-xs text-gray-500 truncate">{item.company_name || 'System'}</p>
                   </div>
-                  <span className="text-xs text-gray-400 whitespace-nowrap">{formatRelativeTime(item.createdAt)}</span>
+                  <span className="text-xs text-gray-400 whitespace-nowrap">{formatRelativeTime(item.created_at)}</span>
                 </div>
               ))
             ) : (

@@ -59,11 +59,11 @@ export default function ActivityPage() {
     const matchesSearch = log.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (log.company_name || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === 'all' || 
-                       (filterType === 'company' && log.actionType.startsWith('company')) ||
-                       (filterType === 'document' && log.actionType.startsWith('document')) ||
-                       (filterType === 'compliance' && log.actionType.startsWith('compliance')) ||
-                       (filterType === 'finance' && log.actionType.startsWith('finance')) ||
-                       (filterType === 'setup' && log.actionType.startsWith('setup'));
+                       (filterType === 'company' && log.action_type.startsWith('company')) ||
+                       (filterType === 'document' && log.action_type.startsWith('document')) ||
+                       (filterType === 'compliance' && log.action_type.startsWith('compliance')) ||
+                       (filterType === 'finance' && log.action_type.startsWith('finance')) ||
+                       (filterType === 'setup' && log.action_type.startsWith('setup'));
     return matchesSearch && matchesType;
   });
 
@@ -173,9 +173,9 @@ export default function ActivityPage() {
                 <div className="flex items-center space-x-6 min-w-0">
                   <div className={cn(
                     "p-3 rounded-2xl border-2 transition-all flex-shrink-0 group-hover:scale-110", 
-                    getIconColor(log.actionType)
+                    getIconColor(log.action_type)
                   )}>
-                    {getIcon(log.actionType)}
+                    {getIcon(log.action_type)}
                   </div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -184,7 +184,7 @@ export default function ActivityPage() {
                         "text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider",
                         "bg-white border border-gray-100 text-gray-400 shadow-sm"
                       )}>
-                        {getActionLabel(log.actionType)}
+                        {getActionLabel(log.action_type)}
                       </span>
                     </div>
                     <div className="flex items-center space-x-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -194,7 +194,7 @@ export default function ActivityPage() {
                       </span>
                       <span className="flex items-center">
                         <Clock className="h-3 w-3 mr-1.5 text-gray-300" />
-                        {formatRelativeTime(log.createdAt)}
+                        {formatRelativeTime(log.created_at)}
                       </span>
                     </div>
                   </div>

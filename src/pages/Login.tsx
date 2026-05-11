@@ -27,7 +27,7 @@ export default function Login() {
         
         if (data.user) {
           await ActivityLogService.logActivity({
-            actionType: 'user_login',
+            action_type: 'user_login',
             description: `User logged in: ${data.user.email}`
           });
         }
@@ -40,7 +40,7 @@ export default function Login() {
         
         if (data.user) {
             await ActivityLogService.logActivity({
-              actionType: 'record_created',
+              action_type: 'record_created',
               description: `New account created: ${email}`
             });
           }

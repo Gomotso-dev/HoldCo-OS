@@ -117,8 +117,8 @@ export default function Finance() {
 
   // Form state
   const [formData, setFormData] = useState({
-    companyId: '',
-    relatedCompanyId: '',
+    company_id: '',
+    related_company_id: '',
     intercompany: false,
     compliance: false,
     date: new Date().toISOString().split('T')[0],
@@ -126,10 +126,10 @@ export default function Finance() {
     category: INCOME_CATEGORIES[0],
     amount: '',
     description: '',
-    paymentMethod: 'EFT',
+    payment_method: 'EFT',
     counterparty: '',
-    referenceNumber: '',
-    linkedDocumentId: '',
+    reference_number: '',
+    linked_document_id: '',
     notes: ''
   });
 
@@ -160,7 +160,7 @@ export default function Finance() {
       // 3. Fetch Transactions
       const financeRes = await supabase
         .from('finance')
-        .select('*, companies!companyId(name)')
+        .select('*, companies!company_id(name)')
         .eq('owner_id', user.id)
         .order('date', { ascending: false });
 
@@ -172,9 +172,9 @@ export default function Finance() {
       const txs = financeRes.data || [];
       // Enrich with related company name if intercompany
       const enrichedTxs = txs.map((tx: any) => {
-        if (tx.relatedCompanyId) {
-          const relComp = (companiesRes.data || []).find(c => c.id === tx.relatedCompanyId);
-          return { ...tx, relatedCompany: relComp ? { name: relComp.name } : undefined };
+        if (tx.related_company_id) {
+          const relComp = (companiesRes.data || []).find(c => c.id === tx.related_company_id);
+          return { ...tx, related_company: relComp ? { name: relComp.name } : undefined };
         }
         return tx;
       });
@@ -208,8 +208,8 @@ export default function Finance() {
     setIsEditMode(false);
     setEditingTxId(null);
     setFormData({
-      companyId: '',
-      relatedCompanyId: '',
+      company_id: '',
+      related_company_id: '',
       intercompany: false,
       compliance: false,
       date: new Date().toISOString().split('T')[0],
@@ -217,10 +217,10 @@ export default function Finance() {
       category: INCOME_CATEGORIES[0],
       amount: '',
       description: '',
-      paymentMethod: 'EFT',
+      payment_method: 'EFT',
       counterparty: '',
-      referenceNumber: '',
-      linkedDocumentId: '',
+      reference_number: '',
+      linked_document_id: '',
       notes: ''
     });
   }
@@ -229,8 +229,8 @@ export default function Finance() {
     setIsEditMode(true);
     setEditingTxId(tx.id);
     setFormData({
-      companyId: tx.companyId,
-      relatedCompanyId: tx.relatedCompanyId || '',
+      company_id: tx.company_id,
+      related_company_id: tx.related_company_id || '',
       intercompany: tx.intercompany || false,
       compliance: tx.compliance || false,
       date: tx.date,
@@ -238,10 +238,10 @@ export default function Finance() {
       category: tx.category,
       amount: tx.amount.toString(),
       description: tx.description,
-      paymentMethod: tx.paymentMethod,
+      payment_method: tx.payment_method,
       counterparty: tx.counterparty || '',
-      referenceNumber: tx.referenceNumber || '',
-      linkedDocumentId: tx.linkedDocumentId || '',
+      reference_number: tx.reference_number || '',
+      linked_document_id: tx.linked_document_id || '',
       notes: tx.notes || ''
     });
     setIsModalOpen(true);
@@ -260,30 +260,30 @@ export default function Finance() {
       }
 
       const payload = {
-        companyId: formData.companyId,
-        relatedCompanyId: formData.intercompany ? formData.relatedCompanyId || null : null,
-        intercompany: formData.intercompany,
-        compliance: formData.compliance || ['Tax', 'Compliance', 'Legal'].includes(formData.category) || formData.type === 'Tax',
-        date: formData.date,
-        type: formData.type,
-        category: formData.category,
-        amount: amount,
-        description: formData.description,
-        paymentMethod: formData.paymentMethod,
-        counterparty: formData.counterparty || null,
-        referenceNumber: formData.referenceNumber || null,
-        linkedDocumentId: formData.linkedDocumentId || null,
-        notes: formData.notes || null,
-        owner_id: user.id,
-        createdAt: new Date().toISOString()
-      };
+    company_id: formData.company_id,
+    related_company_id: formData.intercompany ? formData.related_company_id || null : null,
+    intercompany: formData.intercompany,
+    compliance: formData.compliance || ['Tax', 'Compliance', 'Legal'].includes(formData.category) || formData.type === 'Tax',
+    date: formData.date,
+    type: formData.type,
+    category: formData.category,
+    amount: amount,
+    description: formData.description,
+    payment_method: formData.payment_method,
+    counterparty: formData.counterparty || null,
+    reference_number: formData.reference_number || null,
+    linked_document_id: formData.linked_document_id || null,
+    notes: formData.notes || null,
+    owner_id: user.id,
+    created_at: new Date().toISOString()
+  };
 
       const { data, error } = isEditMode && editingTxId
         ? await supabase
             .from('finance')
             .update({
               ...payload,
-              updatedAt: new Date().toISOString()
+              updated_at: new Date().toISOString()
             })
             .eq('id', editingTxId)
             .eq('owner_id', user.id)
@@ -293,7 +293,7 @@ export default function Finance() {
             .from('finance')
             .insert([{
               ...payload,
-              updatedAt: new Date().toISOString()
+              updated_at: new Date().toISOString()
             }])
             .select()
             .single();
@@ -301,15 +301,13 @@ export default function Finance() {
       if (error) throw error;
 
       if (data) {
-        await logActivity({
-          eventType: isEditMode ? 'update' : 'create',
-          entityType: 'finance',
-          entityId: data.id,
-          description: isEditMode 
-            ? `Updated ${data.type.toLowerCase()}: R ${data.amount.toLocaleString()} - ${data.description}`
-            : `Logged ${data.type.toLowerCase()}: R ${data.amount.toLocaleString()} - ${data.description}`,
-          companyId: data.companyId
-        });
+          logActivity({
+            action_type: isEditMode ? 'finance_updated' : 'finance_created',
+            description: isEditMode 
+              ? `Updated ${data.type.toLowerCase()}: R ${data.amount.toLocaleString()} - ${data.description}`
+              : `Logged ${data.type.toLowerCase()}: R ${data.amount.toLocaleString()} - ${data.description}`,
+            company_id: data.company_id
+          });
       }
 
       closeModal();
@@ -332,12 +330,10 @@ export default function Finance() {
 
       if (error) throw error;
 
-      await logActivity({
-        eventType: 'delete',
-        entityType: 'finance',
-        entityId: txToDelete.id,
+      logActivity({
+        action_type: 'finance_deleted',
         description: `Deleted transaction: ${txToDelete.description}`,
-        companyId: txToDelete.companyId
+        company_id: txToDelete.company_id
       });
       setIsDeleteModalOpen(false);
       setTxToDelete(null);
@@ -352,7 +348,7 @@ export default function Finance() {
   // Memoized calculations
   const filteredTransactions = useMemo(() => {
     return transactions.filter(tx => {
-      const matchesCompany = viewScope === 'all' || selectedCompanyId === 'all' || tx.companyId === selectedCompanyId;
+      const matchesCompany = viewScope === 'all' || selectedCompanyId === 'all' || tx.company_id === selectedCompanyId;
       const matchesSearch = 
         tx.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         tx.companies?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -367,7 +363,7 @@ export default function Finance() {
         filterMode === 'all' ? true :
         filterMode === 'intercompany' ? tx.intercompany :
         filterMode === 'compliance' ? tx.compliance :
-        filterMode === 'docs' ? !!tx.linkedDocumentId : true;
+        filterMode === 'docs' ? !!tx.linked_document_id : true;
       
       return matchesCompany && matchesSearch && matchesDate && matchesFilterMode;
     });
@@ -397,10 +393,10 @@ export default function Finance() {
       .filter(t => t.compliance || t.category === 'Compliance' || t.category === 'Tax' || t.category === 'Legal' || t.type === 'Tax')
       .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
 
-    const activeCompanies = new Set(filteredTransactions.map(t => t.companyId)).size;
+    const activeCompanies = new Set(filteredTransactions.map(t => t.company_id)).size;
     
     const companyPerformance = (companies || []).map(c => {
-      const companyTxs = filteredTransactions.filter(t => t.companyId === c.id);
+      const companyTxs = filteredTransactions.filter(t => t.company_id === c.id);
       const inc = companyTxs
         .filter(t => t.type === 'Income' || t.type === 'Investment')
         .reduce((s, t) => s + (Number(t.amount) || 0), 0);
@@ -464,10 +460,10 @@ export default function Finance() {
       tx.amount,
       tx.description,
       tx.counterparty || '',
-      tx.paymentMethod,
-      tx.referenceNumber || '',
+      tx.payment_method,
+      tx.reference_number || '',
       tx.intercompany ? 'Yes' : 'No',
-      tx.relatedCompany?.name || '',
+      tx.related_company?.name || '',
       tx.compliance ? 'Yes' : 'No',
       tx.notes || ''
     ]);
@@ -975,7 +971,7 @@ export default function Finance() {
                           <div className="flex items-center text-[10px] font-bold text-gray-400 mt-1 space-x-2">
                             <span className="bg-gray-100 px-1.5 py-0.5 rounded uppercase tracking-wider">{tx.category}</span>
                             <span>•</span>
-                            <span className="uppercase tracking-wider">{tx.paymentMethod}</span>
+                            <span className="uppercase tracking-wider">{tx.payment_method}</span>
                             {tx.counterparty && (
                                 <>
                                     <span>•</span>
@@ -987,7 +983,7 @@ export default function Finance() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         <div className="flex items-center justify-center space-x-2">
-                            {tx.linkedDocumentId ? (
+                            {tx.linked_document_id ? (
                                 <div className="p-1.5 bg-emerald-50 rounded-lg text-emerald-600 hover:bg-emerald-100 transition-all shadow-sm" title="Linked Document">
                                     <FileText className="h-4 w-4" />
                                 </div>
@@ -1013,7 +1009,7 @@ export default function Finance() {
                                 {tx.type === 'Income' ? '+' : tx.type === 'Expense' ? '-' : ''}
                                 R {tx.amount.toLocaleString()}
                             </span>
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{tx.referenceNumber || 'NO REF'}</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest mt-0.5">{tx.reference_number || 'NO REF'}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -1110,8 +1106,8 @@ export default function Finance() {
                             <select
                                 required
                                 className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 font-bold text-gray-900 transition-all"
-                                value={formData.companyId}
-                                onChange={e => setFormData({ ...formData, companyId: e.target.value })}
+                                value={formData.company_id}
+                                onChange={e => setFormData({ ...formData, company_id: e.target.value })}
                             >
                                 <option value="">Select Company</option>
                                 {companies.map(c => (
@@ -1150,11 +1146,11 @@ export default function Finance() {
                                   <select
                                       required
                                       className="w-full px-5 py-3 bg-blue-50 border border-blue-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 font-bold text-gray-900 transition-all"
-                                      value={formData.relatedCompanyId}
-                                      onChange={e => setFormData({ ...formData, relatedCompanyId: e.target.value })}
+                                      value={formData.related_company_id}
+                                      onChange={e => setFormData({ ...formData, related_company_id: e.target.value })}
                                   >
                                       <option value="">Select Related Entity</option>
-                                      {companies.filter(c => c.id !== formData.companyId).map(c => (
+                                      {companies.filter(c => c.id !== formData.company_id).map(c => (
                                       <option key={c.id} value={c.id}>{c.name}</option>
                                       ))}
                                   </select>
@@ -1269,8 +1265,8 @@ export default function Finance() {
                         <label className="block text-xs font-bold text-gray-500 mb-1.5 px-1 uppercase tracking-wider">Document Evidence</label>
                         <select
                             className="w-full px-5 py-3 bg-emerald-50/30 border border-emerald-100 rounded-2xl focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 font-bold text-gray-700 transition-all text-sm"
-                            value={formData.linkedDocumentId}
-                            onChange={e => setFormData({ ...formData, linkedDocumentId: e.target.value })}
+                            value={formData.linked_document_id}
+                            onChange={e => setFormData({ ...formData, linked_document_id: e.target.value })}
                         >
                             <option value="">No Document Linked</option>
                             {documents.map(doc => (
@@ -1285,8 +1281,8 @@ export default function Finance() {
                       <label className="block text-xs font-bold text-gray-500 mb-1.5 px-1 uppercase tracking-wider">Payment Method</label>
                       <select
                         className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 font-bold text-gray-900 transition-all"
-                        value={formData.paymentMethod}
-                        onChange={e => setFormData({ ...formData, paymentMethod: e.target.value })}
+                        value={formData.payment_method}
+                        onChange={e => setFormData({ ...formData, payment_method: e.target.value })}
                       >
                         <option value="EFT">Electronic Funds Transfer (EFT)</option>
                         <option value="Debit Order">Direct Debit</option>
@@ -1301,8 +1297,8 @@ export default function Finance() {
                         type="text"
                         placeholder="Internal or external reference"
                         className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 font-bold text-gray-900 transition-all"
-                        value={formData.referenceNumber}
-                        onChange={e => setFormData({ ...formData, referenceNumber: e.target.value })}
+                        value={formData.reference_number}
+                        onChange={e => setFormData({ ...formData, reference_number: e.target.value })}
                       />
                     </div>
                   </div>
@@ -1432,20 +1428,20 @@ export default function Finance() {
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Payment Method</span>
-                            <span className="text-xs font-black text-gray-900 uppercase tracking-tight">{selectedTx.paymentMethod}</span>
+                            <span className="text-xs font-black text-gray-900 uppercase tracking-tight">{selectedTx.payment_method}</span>
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Reference Number</span>
-                            <span className="text-xs font-black text-indigo-600 font-mono tracking-tighter truncate max-w-[200px]">{selectedTx.referenceNumber || 'None provided'}</span>
+                            <span className="text-xs font-black text-indigo-600 font-mono tracking-tighter truncate max-w-[200px]">{selectedTx.reference_number || 'None provided'}</span>
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Logged At</span>
-                            <span className="text-[10px] font-bold text-gray-500">{selectedTx.createdAt ? format(new Date(selectedTx.createdAt), 'dd MMM yyyy, HH:mm') : 'N/A'}</span>
+                            <span className="text-[10px] font-bold text-gray-500">{selectedTx.created_at ? format(new Date(selectedTx.created_at), 'dd MMM yyyy, HH:mm') : 'N/A'}</span>
                         </div>
                     </div>
                 </div>
 
-                {selectedTx.linkedDocumentId && documents.find(d => d.id === selectedTx.linkedDocumentId) && (
+                {selectedTx.linked_document_id && documents.find(d => d.id === selectedTx.linked_document_id) && (
                     <div className="p-4 bg-emerald-50 rounded-3xl border border-emerald-100 flex items-center justify-between group cursor-pointer hover:bg-emerald-100 transition-all">
                         <div className="flex items-center space-x-3">
                             <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-50">
@@ -1453,7 +1449,7 @@ export default function Finance() {
                             </div>
                             <div>
                                 <p className="text-xs font-bold text-emerald-900">Supporting Evidence</p>
-                                <p className="text-[10px] font-bold text-emerald-600 tracking-tight line-clamp-1">{documents.find(d => d.id === selectedTx.linkedDocumentId)?.title}</p>
+                                <p className="text-[10px] font-bold text-emerald-600 tracking-tight line-clamp-1">{documents.find(d => d.id === selectedTx.linked_document_id)?.title}</p>
                             </div>
                         </div>
                         <ChevronRight className="h-4 w-4 text-emerald-400 group-hover:translate-x-1 transition-transform" />

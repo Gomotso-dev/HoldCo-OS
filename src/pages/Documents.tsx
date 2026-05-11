@@ -65,26 +65,26 @@ export default function Documents() {
 
   // Form state
   const [formData, setFormData] = useState({
-    companyId: '',
+    company_id: '',
     category: 'Incorporation',
     title: '',
-    issueDate: '',
-    expiryDate: '',
+    issue_date: '',
+    expiry_date: '',
     notes: '',
-    complianceId: ''
+    compliance_id: ''
   });
 
   useEffect(() => {
     const upload = searchParams.get('upload');
-    const companyId = searchParams.get('companyId');
-    const complianceId = searchParams.get('complianceId');
+    const company_id = searchParams.get('companyId');
+    const compliance_id = searchParams.get('complianceId');
     const title = searchParams.get('title');
 
     if (upload === 'true' && !isModalOpen) {
       setFormData(prev => ({
         ...prev,
-        companyId: companyId || prev.companyId,
-        complianceId: complianceId || prev.complianceId,
+        company_id: company_id || prev.company_id,
+        compliance_id: compliance_id || prev.compliance_id,
         title: title || prev.title
       }));
       setIsModalOpen(true);
@@ -103,13 +103,13 @@ export default function Documents() {
     setIsModalOpen(false);
     setFile(null);
     setFormData({
-      companyId: '',
+      company_id: '',
       category: 'Incorporation',
       title: '',
-      issueDate: '',
-      expiryDate: '',
+      issue_date: '',
+      expiry_date: '',
       notes: '',
-      complianceId: ''
+      compliance_id: ''
     });
   }
 
@@ -134,12 +134,12 @@ export default function Documents() {
         .from('documents')
         .select(`
           *,
-          companies!companyId (
+          companies!company_id (
             name
           )
         `)
         .eq('owner_id', user.id)
-        .order('createdAt', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (docsQueryRes.error) {
         console.error('Documents fetch error:', docsQueryRes.error);
@@ -155,29 +155,29 @@ export default function Documents() {
   }
 
   // Helper to get clean storage path from URL or path
-  function getStoragePath(fileUrl: string) {
-    if (!fileUrl) return '';
+  function getStoragePath(file_url: string) {
+    if (!file_url) return '';
     
     // If it's a full URL, extract the path after 'documents/'
-    if (fileUrl.includes('/storage/v1/object/')) {
-      const parts = fileUrl.split('/documents/');
+    if (file_url.includes('/storage/v1/object/')) {
+      const parts = file_url.split('/documents/');
       // Get the last part and handle edge case where documents might be in the filename
       // But typically it's .../public/documents/path/to/file
       return parts[parts.length - 1];
     }
     
     // If it already starts with 'documents/', strip it
-    if (fileUrl.startsWith('documents/')) {
-      return fileUrl.replace(/^documents\//, '');
+    if (file_url.startsWith('documents/')) {
+      return file_url.replace(/^documents\//, '');
     }
     
-    return fileUrl;
+    return file_url;
   }
 
   async function handleDownload(doc: DocumentWithCompany) {
     try {
       setDownloadingId(doc.id);
-      const path = getStoragePath(doc.fileUrl);
+      const path = getStoragePath(doc.file_url);
       
       if (!path) throw new Error('Document path not found.');
 
@@ -209,7 +209,7 @@ export default function Documents() {
 
       // Validation
       if (!file) throw new Error('Please select a file to upload.');
-      if (!formData.companyId) throw new Error('Please select a company.');
+      if (!formData.company_id) throw new Error('Please select a company.');
       if (!formData.title.trim()) throw new Error('Please enter a document title.');
       if (!formData.category) throw new Error('Please select a category.');
 
@@ -224,8 +224,8 @@ export default function Documents() {
         throw new Error('File size exceeds the 10MB limit.');
       }
 
-      let fileUrl = '';
-      let fileType = file.type;
+      let file_url = '';
+      let file_type = file.type;
 
       // 1. Upload to Supabase Storage
       const fileExt = file.name.split('.').pop();
@@ -233,7 +233,7 @@ export default function Documents() {
       const fileName = `${Date.now()}-${sanitizedFileName}`;
       
       // Store relative path ONLY (no 'documents/' prefix inside the bucket)
-      const filePath = `${user.id}/${formData.companyId}/${fileName}`;
+      const filePath = `${user.id}/${formData.company_id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('documents')
@@ -250,26 +250,26 @@ export default function Documents() {
       }
 
       // Store the specific storage path in the DB
-      fileUrl = filePath;
+      file_url = filePath;
 
       // 3. Insert into database
       const timestamp = new Date().toISOString();
       const { data, error: insertError } = await supabase
         .from('documents')
         .insert([{
-          companyId: formData.companyId,
+          company_id: formData.company_id,
           category: formData.category,
           title: formData.title,
-          fileUrl,
-          fileType,
+          file_url: file_url,
+          file_type: file_type,
           notes: formData.notes || null,
-          issueDate: formData.issueDate || null,
-          expiryDate: formData.expiryDate || null,
+          issue_date: formData.issue_date || null,
+          expiry_date: formData.expiry_date || null,
           owner_id: user.id,
-          uploadedBy: user.email,
-          versionNumber: 1,
-          createdAt: timestamp,
-          updatedAt: timestamp
+          uploaded_by: user.email,
+          version_number: 1,
+          created_at: timestamp,
+          updated_at: timestamp
         }])
         .select()
         .single();
@@ -278,25 +278,25 @@ export default function Documents() {
 
       if (data) {
         // Link to compliance item if provided
-        if (formData.complianceId) {
+        if (formData.compliance_id) {
           await supabase
             .from('compliance')
             .update({ 
-               linkedDocumentId: data.id
+               linked_document_id: data.id
             })
-            .eq('id', formData.complianceId);
+            .eq('id', formData.compliance_id);
         }
 
         await ActivityLogService.logActivity({
-          actionType: 'document_uploaded' as any,
-          description: formData.complianceId 
+          action_type: 'document_uploaded' as any,
+          description: formData.compliance_id 
             ? `Uploaded and linked document: ${data.title}`
             : `Uploaded document: ${data.title}`,
-          companyId: data.companyId,
-          documentId: data.id,
-          complianceId: formData.complianceId || undefined
+          company_id: data.company_id,
+          document_id: data.id,
+          compliance_id: formData.compliance_id || undefined
         });
-        setSuccess(formData.complianceId 
+        setSuccess(formData.compliance_id 
           ? `Document uploaded and linked to compliance item. Ready to submit!`
           : `Document "${data.title}" successfully uploaded.`);
       }
@@ -323,10 +323,10 @@ export default function Documents() {
       if (error) throw error;
 
       await ActivityLogService.logActivity({
-        actionType: 'document_uploaded' as any,
+        action_type: 'document_uploaded' as any,
         description: `Deleted document: ${docToDelete.title}`,
-        companyId: docToDelete.companyId,
-        documentId: docToDelete.id
+        company_id: docToDelete.company_id,
+        document_id: docToDelete.id
       });
       setSuccess(`Document "${docToDelete.title}" successfully deleted.`);
       setIsDeleteModalOpen(false);
@@ -475,7 +475,7 @@ export default function Documents() {
                   </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
                   {filteredDocuments.map((doc, index) => {
-                    const isExpiring = doc.expiryDate && (new Date(doc.expiryDate).getTime() - new Date().getTime()) < (30 * 24 * 60 * 60 * 1000);
+                    const isExpiring = doc.expiry_date && (new Date(doc.expiry_date).getTime() - new Date().getTime()) < (30 * 24 * 60 * 60 * 1000);
                     return (
                       <motion.tr 
                         key={doc.id}
@@ -491,7 +491,7 @@ export default function Documents() {
                             </div>
                             <div className="flex flex-col">
                               <span className="text-sm font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">{doc.title}</span>
-                              <span className="text-[10px] text-gray-400 font-medium">v{doc.versionNumber || 1} • {doc.fileType?.toUpperCase() || 'PDF'}</span>
+                              <span className="text-[10px] text-gray-400 font-medium">v{doc.version_number || 1} • {doc.file_type?.toUpperCase() || 'PDF'}</span>
                             </div>
                           </div>
                         </td>
@@ -509,7 +509,7 @@ export default function Documents() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center text-xs font-bold tabular-nums text-gray-700">
                             <Calendar className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                            {formatDate(doc.issueDate || doc.createdAt)}
+                            {formatDate(doc.issue_date || doc.created_at)}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -527,7 +527,7 @@ export default function Documents() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right px-8 text-sm font-medium">
                           <div className="flex items-center justify-end space-x-2">
-                            {doc.fileUrl && (
+                            {doc.file_url && (
                               <button 
                                 onClick={() => handleDownload(doc)}
                                 disabled={downloadingId === doc.id}
@@ -633,8 +633,8 @@ export default function Documents() {
                     <select
                       required
                       className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                      value={formData.companyId}
-                      onChange={e => setFormData({ ...formData, companyId: e.target.value })}
+                      value={formData.company_id}
+                      onChange={e => setFormData({ ...formData, company_id: e.target.value })}
                     >
                       <option value="">Select Company</option>
                       {companies.map(c => (
@@ -674,8 +674,8 @@ export default function Documents() {
                       <input
                         type="date"
                         className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                        value={formData.issueDate}
-                        onChange={e => setFormData({ ...formData, issueDate: e.target.value })}
+                        value={formData.issue_date}
+                        onChange={e => setFormData({ ...formData, issue_date: e.target.value })}
                       />
                     </div>
                     <div>
@@ -683,8 +683,8 @@ export default function Documents() {
                       <input
                         type="date"
                         className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                        value={formData.expiryDate}
-                        onChange={e => setFormData({ ...formData, expiryDate: e.target.value })}
+                        value={formData.expiry_date}
+                        onChange={e => setFormData({ ...formData, expiry_date: e.target.value })}
                       />
                     </div>
                   </div>

@@ -130,7 +130,7 @@ export default function ComplianceReport() {
           totalCompliance: finalItems.length,
           overdue: finalItems.filter(i => i.status === 'Overdue').length,
           dueSoon: finalItems.filter(i => {
-            const dueDateStr = i.dueDate || i.due_date;
+            const dueDateStr = i.due_date;
             if (!dueDateStr) return false;
             const dueDate = new Date(dueDateStr);
             const today = new Date();
@@ -167,9 +167,9 @@ export default function ComplianceReport() {
     const company = data.companies.find(c => c.id === selectedCompanyId);
     if (!company) return data;
 
-    const complianceItems = data.complianceItems.filter(i => i.companyId === selectedCompanyId);
-    const activityLogs = data.activityLogs.filter(l => l.companyId === selectedCompanyId);
-    const companyDocs = documents.filter(d => d.companyId === selectedCompanyId);
+    const complianceItems = data.complianceItems.filter(i => i.company_id === selectedCompanyId);
+    const activityLogs = data.activityLogs.filter(l => l.company_id === selectedCompanyId);
+    const companyDocs = documents.filter(d => d.company_id === selectedCompanyId);
 
     // Calculate company specific stats
     const stats = {
@@ -177,7 +177,7 @@ export default function ComplianceReport() {
       totalCompliance: complianceItems.length,
       overdue: complianceItems.filter(i => i.status === 'Overdue').length,
       dueSoon: complianceItems.filter(i => {
-        const dueDateStr = i.dueDate;
+        const dueDateStr = i.due_date;
         if (!dueDateStr) return false;
         const dueDate = new Date(dueDateStr);
         const today = new Date();
@@ -207,9 +207,9 @@ export default function ComplianceReport() {
 
     // Log the export action
     await ActivityLogService.logActivity({
-      actionType: 'report_exported' as any,
+      action_type: 'report_exported' as any,
       description: `Exported ${reportMode === 'group' ? 'Group' : (selectedCompany?.name || 'Company')} Compliance Report as HTML`,
-      companyId: reportMode === 'company' ? selectedCompanyId : undefined
+      company_id: reportMode === 'company' ? selectedCompanyId : undefined
     });
 
     const exportTitle = reportMode === 'group' ? 'HoldCo OS - Group Compliance Report' : `HoldCo OS - ${selectedCompany?.name || 'Company'} Compliance Report`;
@@ -369,7 +369,7 @@ export default function ComplianceReport() {
                     </p>
                     {reportMode === 'company' && selectedCompany && (
                       <p className="mt-2 text-indigo-400 font-black uppercase tracking-widest text-[10px]">
-                        Registration: {selectedCompany.registrationNumber || 'N/A'}
+                        Registration: {selectedCompany.registration_number || 'N/A'}
                       </p>
                     )}
                   </div>
@@ -468,7 +468,7 @@ export default function ComplianceReport() {
                       {filteredData.companies.map((company) => (
                         <tr key={company.id} className="hover:bg-gray-50/50 transition-colors">
                           <td className="px-6 py-4 text-xs font-bold text-gray-900">{company.name}</td>
-                          <td className="px-6 py-4 text-[10px] font-mono font-bold text-gray-500 tracking-tighter">{company.registrationNumber || 'N/A'}</td>
+                          <td className="px-6 py-4 text-[10px] font-mono font-bold text-gray-500 tracking-tighter">{company.registration_number || 'N/A'}</td>
                           <td className="px-6 py-4 text-center">
                             <span className={cn(
                               "px-2 py-0.5 rounded-full text-[9px] font-black uppercase",
@@ -492,29 +492,29 @@ export default function ComplianceReport() {
                   <Building2 className="h-5 w-5 mr-3 text-indigo-600" />
                   Legal Entity Snapshot
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                    <div className="space-y-4">
                       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                         <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Incorporation Date</p>
-                        <p className="text-xs font-bold text-gray-900">{formatDate(selectedCompany.incorporationDate)}</p>
+                        <p className="text-xs font-bold text-gray-900">{formatDate(selectedCompany.incorporation_date)}</p>
                       </div>
                       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                         <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Financial Year End</p>
-                        <p className="text-xs font-bold text-gray-900">{selectedCompany.financialYearEnd || 'Not Set'}</p>
+                        <p className="text-xs font-bold text-gray-900">{selectedCompany.financial_year_end || 'Not Set'}</p>
                       </div>
                       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                         <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Entity Structure</p>
-                        <p className="text-xs font-bold text-gray-900">{selectedCompany.legalEntityType || 'Standard Company'}</p>
+                        <p className="text-xs font-bold text-gray-900">{selectedCompany.legal_entity_type || 'Standard Company'}</p>
                       </div>
                    </div>
                    <div className="space-y-4">
                       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                         <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Group Position</p>
-                        <p className="text-xs font-bold text-gray-900">{selectedCompany.groupRole || 'Subsidiary'}</p>
+                        <p className="text-xs font-bold text-gray-900">{selectedCompany.group_role || 'Subsidiary'}</p>
                       </div>
                       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                         <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Tax Reference</p>
-                        <p className="text-xs font-mono font-bold text-gray-900">{selectedCompany.taxNumber || 'Pending Verification'}</p>
+                        <p className="text-xs font-mono font-bold text-gray-900">{selectedCompany.tax_number || 'Pending Verification'}</p>
                       </div>
                       {selectedCompany.notes && (
                         <div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
@@ -561,11 +561,11 @@ export default function ComplianceReport() {
                           "px-6 py-4 text-[11px] font-bold tabular-nums whitespace-nowrap",
                           item.status === 'Overdue' ? "text-red-600" : "text-gray-900"
                         )}>
-                          {formatDate(item.dueDate || item.due_date)}
+                          {formatDate(item.due_date)}
                         </td>
                         {reportMode === 'company' && (
                           <td className="px-6 py-4 text-center">
-                            {item.linkedDocumentId ? (
+                            {item.linked_document_id ? (
                               <div className="inline-flex items-center text-[8px] font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">
                                 <CheckCircle2 className="h-2.5 w-2.5 mr-1" />
                                 Verified
@@ -628,7 +628,7 @@ export default function ComplianceReport() {
                              <p className="text-[10px] font-black text-gray-900 truncate pr-4">{doc.title}</p>
                              <div className="flex items-center space-x-2">
                                 <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">{doc.category}</span>
-                                <span className="text-[7px] font-bold text-indigo-300 uppercase leading-none border border-indigo-100 px-1 rounded">{doc.fileType?.split('/')[1] || 'DOC'}</span>
+                                <span className="text-[7px] font-bold text-indigo-300 uppercase leading-none border border-indigo-100 px-1 rounded">{doc.file_type?.split('/')[1] || 'DOC'}</span>
                              </div>
                           </div>
                        </div>
@@ -655,7 +655,7 @@ export default function ComplianceReport() {
                         {reportMode === 'group' && <p className="text-[8px] text-gray-400 font-extrabold uppercase tracking-widest mt-0.5">{log.company_name || 'Group System'}</p>}
                       </div>
                     </div>
-                    <span className="text-[9px] font-black text-gray-400 tabular-nums uppercase">{formatDate(log.createdAt)}</span>
+                    <span className="text-[9px] font-black text-gray-400 tabular-nums uppercase">{formatDate(log.created_at)}</span>
                   </div>
                 )) : (
                   <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest italic text-center py-6">Audit trail is currently sterile</p>

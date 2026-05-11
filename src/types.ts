@@ -24,115 +24,115 @@ export type TransactionType = 'Income' | 'Expense' | 'Transfer' | 'Loan' | 'Inve
 
 export interface User {
   id: string;
-  fullName: string;
+  full_name: string;
   email: string;
   role: 'Owner' | 'Admin' | 'Accountant' | 'Manager';
-  createdAt: string;
+  created_at: string;
 }
 
 export interface Company {
   id: string;
   name: string;
-  tradingName?: string;
-  legalEntityType: CompanyLegalType;
-  groupRole: CompanyGroupRole;
-  registrationNumber: string;
-  incorporationDate: string;
-  taxNumber?: string;
-  vatNumber?: string;
-  payeNumber?: string;
-  uifNumber?: string;
+  trading_name?: string;
+  legal_entity_type: CompanyLegalType;
+  group_role: CompanyGroupRole;
+  registration_number: string;
+  incorporation_date: string;
+  tax_number?: string;
+  vat_number?: string;
+  paye_number?: string;
+  uif_number?: string;
   industry?: string;
-  financialYearEnd: string;
+  financial_year_end: string;
   status: CompanyStatus;
   notes?: string;
   owner_id: string;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface CompanyRelationship {
   id: string;
-  parentCompanyId: string;
-  childCompanyId: string;
-  ownershipPercentage: number;
-  relationshipType: string;
-  effectiveDate: string;
+  parent_company_id: string;
+  child_company_id: string;
+  ownership_percentage: number;
+  relationship_type: string;
+  effective_date: string;
   notes?: string;
 }
 
 export interface Director {
   id: string;
-  companyId: string;
-  fullName: string;
-  idNumber?: string;
-  passportNumber?: string;
-  appointmentDate: string;
-  resignationDate?: string;
-  roleTitle: string;
+  company_id: string;
+  full_name: string;
+  id_number?: string;
+  passport_number?: string;
+  appointment_date: string;
+  resignation_date?: string;
+  role_title: string;
   email?: string;
   phone?: string;
 }
 
 export interface Shareholder {
   id: string;
-  companyId: string;
+  company_id: string;
   name: string;
   type: 'Person' | 'Entity';
-  ownershipPercentage: number;
-  shareClass: string;
-  issueDate: string;
+  ownership_percentage: number;
+  share_class: string;
+  issue_date: string;
   notes?: string;
 }
 
 export interface BeneficialOwner {
   id: string;
-  companyId: string;
-  fullName: string;
-  controlType: string;
-  ownershipPercentage: number;
-  effectiveDate: string;
+  company_id: string;
+  full_name: string;
+  control_type: string;
+  ownership_percentage: number;
+  effective_date: string;
   status: 'Active' | 'Inactive';
   notes?: string;
 }
 
 export interface Document {
   id: string;
-  companyId: string;
+  company_id: string;
   category: string;
   title: string;
-  fileUrl: string;
-  fileType: string;
-  versionNumber: number;
-  issueDate?: string;
-  expiryDate?: string;
-  uploadedBy: string;
+  file_url: string;
+  file_type: string;
+  version_number: number;
+  issue_date?: string;
+  expiry_date?: string;
+  uploaded_by: string;
   notes?: string;
-  createdAt: string;
+  created_at: string;
 }
 
 export interface ComplianceItem {
   id: string;
-  companyId: string;
+  company_id: string;
   category: 'SARS' | 'CIPC' | 'Labour' | 'POPIA' | 'Governance' | 'Other';
   type: string;
   title: string;
-  dueDate: string;
-  reminderDate?: string;
+  due_date: string;
+  reminder_date?: string;
   priority: 'Low' | 'Medium' | 'High' | 'Critical';
   status: ComplianceStatus;
   required_documents?: string[];
-  linkedDocumentId?: string;
+  linked_document_id?: string;
   notes?: string;
   owner_id: string;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface FinanceTransaction {
   id: string;
-  companyId: string;
-  relatedCompanyId?: string; // For intercompany transfers/loans
+  company_id: string;
+  related_company_id?: string; // For intercompany transfers/loans
   intercompany?: boolean;
   compliance?: boolean; // For tax, legal, CIPC filing etc.
   date: string;
@@ -140,23 +140,23 @@ export interface FinanceTransaction {
   category: string;
   amount: number;
   description: string;
-  paymentMethod: string;
+  payment_method: string;
   counterparty?: string;
-  referenceNumber?: string;
-  linkedDocumentId?: string;
+  reference_number?: string;
+  linked_document_id?: string;
   notes?: string;
   owner_id: string;
-  createdAt: string;
+  created_at: string;
 }
 
 export interface ActivityLog {
   id: string;
-  userId: string;
+  user_id: string;
   owner_id: string;
-  eventType: string;
-  entityType: string;
-  entityId: string;
+  event_type: string;
+  entity_type: string;
+  entity_id: string;
   description: string;
-  companyId?: string;
-  createdAt: string;
+  company_id?: string;
+  created_at: string;
 }

@@ -8,9 +8,9 @@ export interface TodaysAction {
   id: string;
   compliance_name: string;
   regulator: string;
-  companyId: string;
+  company_id: string;
   company_name: string;
-  dueDate: string;
+  due_date: string;
   status: string;
   priority: string;
   risk_level: string;
@@ -39,40 +39,25 @@ export async function getTodaysActions(userId: string): Promise<TodaysAction[]> 
         title,
         type,
         category,
-        companyId,
-        dueDate,
+        company_id,
+        due_date,
         status,
         priority,
         risk_level,
         required_documents,
-        companies (
+        companies!company_id (
           name
         )
       `)
       .eq('owner_id', userId)
       .neq('status', 'Completed')
-      .lte('dueDate', sevenDaysFromNow.toISOString())
-      .order('dueDate', { ascending: true });
+      .lte('due_date', sevenDaysFromNow.toISOString())
+      .order('due_date', { ascending: true });
 
     const { data, error } = await query;
 
     if (error) {
-      console.error('[complianceActions] Supabase error:', error);
-      
-      // Fallback: Try without the join in case the relationship is broken
-      console.log('[complianceActions] Attempting fallback query without company join...');
-      const fallbackQuery = await supabase
-        .from('compliance')
-        .select('id, title, type, category, companyId, dueDate, status, priority, risk_level, required_documents')
-        .eq('owner_id', userId)
-        .neq('status', 'Completed')
-        .lte('dueDate', sevenDaysFromNow.toISOString())
-        .order('dueDate', { ascending: true });
-      
-      if (fallbackQuery.error) throw fallbackQuery.error;
-      
-      // If fallback works, continue with raw data
-      return processActions(fallbackQuery.data, today, []);
+      throw error;
     }
     
     console.log('[complianceActions] Data received:', data?.length, 'items');
@@ -80,11 +65,11 @@ export async function getTodaysActions(userId: string): Promise<TodaysAction[]> 
     if (!data || data.length === 0) return [];
 
     // Fetch all documents for these companies to check readiness
-    const companyIds = Array.from(new Set(data.map((item: any) => item.companyId)));
+    const companyIds = Array.from(new Set(data.map((item: any) => item.company_id)));
     const { data: documents, error: docsError } = await supabase
       .from('documents')
-      .select('companyId, title, category')
-      .in('companyId', companyIds);
+      .select('company_id, title, category')
+      .in('company_id', companyIds);
 
     if (docsError) console.warn('[complianceActions] Failed to fetch documents for readiness check:', docsError);
 
@@ -101,7 +86,7 @@ export async function getTodaysActions(userId: string): Promise<TodaysAction[]> 
  */
 function processActions(data: any[], today: Date, documents: any[]): TodaysAction[] {
   const actions: TodaysAction[] = data.map((item: any) => {
-    const dueDate = parseISO(item.dueDate);
+    const dueDate = parseISO(item.due_date);
     const daysUntilDue = differenceInDays(dueDate, today);
     
     let urgency: UrgencyType = 'due_soon';
@@ -113,7 +98,7 @@ function processActions(data: any[], today: Date, documents: any[]): TodaysActio
 
     // Document Readiness Logic
     const requiredDocs = item.required_documents || [];
-    const companyDocs = documents?.filter(doc => doc.companyId === item.companyId) || [];
+    const companyDocs = documents?.filter(doc => (doc.company_id === item.company_id || doc.companyId === item.company_id)) || [];
     
     let readiness: DocumentReadiness = 'No Documents Required';
     if (requiredDocs.length > 0) {
@@ -131,9 +116,9 @@ function processActions(data: any[], today: Date, documents: any[]): TodaysActio
       id: item.id,
       compliance_name: item.title,
       regulator: item.type || item.category || 'Unknown',
-      companyId: item.companyId,
+      company_id: item.company_id,
       company_name: item.companies?.name || 'Unknown Entity',
-      dueDate: item.dueDate,
+      due_date: item.due_date,
       status: item.status,
       priority: item.priority || 'Medium',
       risk_level: item.risk_level || 'Medium',
@@ -173,6 +158,6 @@ function processActions(data: any[], today: Date, documents: any[]): TodaysActio
     if (priorityDiff !== 0) return priorityDiff;
 
     // Due Date (soonest first)
-    return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+    return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
   }).slice(0, 5); // Return only top 5
 }

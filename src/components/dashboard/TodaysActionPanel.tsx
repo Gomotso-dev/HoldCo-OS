@@ -51,7 +51,7 @@ export default function TodaysActionPanel({ userId }: TodaysActionPanelProps) {
       setIsUpdating(true);
       const { error: updateError } = await supabase
         .from('compliance')
-        .update({ status: 'Completed', updatedAt: new Date().toISOString() })
+        .update({ status: 'Completed', updated_at: new Date().toISOString() })
         .eq('id', itemId);
 
       if (updateError) throw updateError;
@@ -59,16 +59,16 @@ export default function TodaysActionPanel({ userId }: TodaysActionPanelProps) {
       // 2. Fetch action details for logging
       const { data: itemData } = await supabase
         .from('compliance')
-        .select('title, companyId')
+        .select('title, company_id')
         .eq('id', itemId)
         .single();
 
       if (itemData) {
         await ActivityLogService.logActivity({
-          actionType: 'compliance_completed' as any,
+          action_type: 'compliance_completed' as any,
           description: `Completed compliance task: ${itemData.title}`,
-          companyId: itemData.companyId,
-          complianceId: itemId
+          company_id: itemData.company_id,
+          compliance_id: itemId
         });
       }
 
@@ -268,7 +268,7 @@ export default function TodaysActionPanel({ userId }: TodaysActionPanelProps) {
                     >
                       {action.document_readiness === 'Missing Documents' && (
                         <button
-                          onClick={() => navigate(`/documents?companyId=${action.companyId}&complianceId=${action.id}&upload=true&title=${encodeURIComponent(action.required_documents[0] || '')}`)}
+                          onClick={() => navigate(`/documents?companyId=${action.company_id}&complianceId=${action.id}&upload=true&title=${encodeURIComponent(action.required_documents[0] || '')}`)}
                           className="bg-orange-600 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-sm shadow-orange-100 active:scale-95 flex items-center"
                         >
                           <Upload className="h-3 w-3 mr-1.5" />

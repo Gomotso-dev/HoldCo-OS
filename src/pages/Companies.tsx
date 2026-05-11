@@ -48,11 +48,11 @@ export default function Companies() {
   // Form state
   const [formData, setFormData] = useState({
     name: '',
-    legalEntityType: 'Private Company (Pty) Ltd' as CompanyLegalType,
-    groupRole: 'Operating Company' as CompanyGroupRole,
-    registrationNumber: '',
-    incorporationDate: new Date().toISOString().split('T')[0],
-    financialYearEnd: 'February',
+    legal_entity_type: 'Private Company (Pty) Ltd' as CompanyLegalType,
+    group_role: 'Operating Company' as CompanyGroupRole,
+    registration_number: '',
+    incorporation_date: new Date().toISOString().split('T')[0],
+    financial_year_end: 'February',
     status: 'Active' as CompanyStatus,
     notes: ''
   });
@@ -107,11 +107,11 @@ export default function Companies() {
       
       const insertPayload = {
         name: formData.name,
-        legalEntityType: formData.legalEntityType,
-        groupRole: formData.groupRole,
-        registrationNumber: formData.registrationNumber,
-        incorporationDate: formData.incorporationDate,
-        financialYearEnd: formData.financialYearEnd,
+        legal_entity_type: formData.legal_entity_type,
+        group_role: formData.group_role,
+        registration_number: formData.registration_number,
+        incorporation_date: formData.incorporation_date,
+        financial_year_end: formData.financial_year_end,
         status: formData.status,
         notes: formData.notes || null,
         owner_id: user.id
@@ -161,7 +161,7 @@ export default function Companies() {
         await ActivityLogService.logActivity({
           action_type: 'company_created' as any,
           description: `Created new company: ${data.name}`,
-          companyId: data.id
+          company_id: data.id
         });
         
         setIsModalOpen(false);
@@ -172,11 +172,11 @@ export default function Companies() {
 
       setFormData({
         name: '',
-        legalEntityType: 'Private Company (Pty) Ltd',
-        groupRole: 'Operating Company',
-        registrationNumber: '',
-        incorporationDate: new Date().toISOString().split('T')[0],
-        financialYearEnd: 'February',
+        legal_entity_type: 'Private Company (Pty) Ltd',
+        group_role: 'Operating Company',
+        registration_number: '',
+        incorporation_date: new Date().toISOString().split('T')[0],
+        financial_year_end: 'February',
         status: 'Active',
         notes: ''
       });
@@ -208,7 +208,7 @@ export default function Companies() {
       await ActivityLogService.logActivity({
         action_type: 'company_updated' as any,
         description: `Deleted company: ${companyToDelete.name}`,
-        companyId: companyToDelete.id
+        company_id: companyToDelete.id
       });
       setSuccess(`Company "${companyToDelete.name}" successfully deleted.`);
       setIsDeleteModalOpen(false);
@@ -223,7 +223,7 @@ export default function Companies() {
 
   const filteredCompanies = companies.filter(c => 
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (c.registrationNumber || '').toLowerCase().includes(searchTerm.toLowerCase())
+    (c.registration_number || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -322,21 +322,21 @@ export default function Companies() {
                 <h3 className="text-lg font-bold text-gray-900 mb-1 leading-tight group-hover:text-indigo-600 transition-colors">{company.name}</h3>
                 <div className="flex flex-wrap gap-2 mb-4">
                   <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                    {company.groupRole}
+                    {company.group_role}
                   </span>
                   <span className="px-2 py-0.5 bg-gray-50 text-gray-600 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                    {company.legalEntityType}
+                    {company.legal_entity_type}
                   </span>
                 </div>
                 
                 <div className="space-y-2.5">
                   <div className="flex items-center text-xs text-gray-500">
                     <CheckCircle2 className="h-3.5 w-3.5 mr-2 text-indigo-400" />
-                    <span className="font-medium truncate">{company.registrationNumber || 'No reg number'}</span>
+                    <span className="font-medium truncate">{company.registration_number || 'No reg number'}</span>
                   </div>
                   <div className="flex items-center text-xs text-gray-500">
                     <Clock className="h-3.5 w-3.5 mr-2 text-indigo-400" />
-                    <span>Incorp: {formatDate(company.incorporationDate)}</span>
+                    <span>Incorp: {formatDate(company.incorporation_date)}</span>
                   </div>
                 </div>
               </div>
@@ -424,8 +424,8 @@ export default function Companies() {
                       type="text"
                       placeholder="e.g. 2024/123456/07"
                       className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      value={formData.registrationNumber}
-                      onChange={e => setFormData({ ...formData, registrationNumber: e.target.value })}
+                      value={formData.registration_number}
+                      onChange={e => setFormData({ ...formData, registration_number: e.target.value })}
                     />
                   </div>
 
@@ -446,8 +446,8 @@ export default function Companies() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Legal Entity Type</label>
                         <select
                           className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white"
-                          value={formData.legalEntityType}
-                          onChange={e => setFormData({ ...formData, legalEntityType: e.target.value as CompanyLegalType })}
+                          value={formData.legal_entity_type}
+                          onChange={e => setFormData({ ...formData, legal_entity_type: e.target.value as CompanyLegalType })}
                         >
                           <option value="Private Company (Pty) Ltd">Private Company (Pty) Ltd</option>
                           <option value="Public Company (Ltd)">Public Company (Ltd)</option>
@@ -465,8 +465,8 @@ export default function Companies() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Group Role</label>
                         <select
                           className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white"
-                          value={formData.groupRole}
-                          onChange={e => setFormData({ ...formData, groupRole: e.target.value as CompanyGroupRole })}
+                          value={formData.group_role}
+                          onChange={e => setFormData({ ...formData, group_role: e.target.value as CompanyGroupRole })}
                         >
                           <option value="Holding Company">Holding Company</option>
                           <option value="Subsidiary">Subsidiary</option>
@@ -483,8 +483,8 @@ export default function Companies() {
                         <input
                           type="date"
                           className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white"
-                          value={formData.incorporationDate}
-                          onChange={e => setFormData({ ...formData, incorporationDate: e.target.value })}
+                          value={formData.incorporation_date}
+                          onChange={e => setFormData({ ...formData, incorporation_date: e.target.value })}
                         />
                       </div>
 
@@ -492,8 +492,8 @@ export default function Companies() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Financial Year End</label>
                         <select
                           className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white"
-                          value={formData.financialYearEnd}
-                          onChange={e => setFormData({ ...formData, financialYearEnd: e.target.value })}
+                          value={formData.financial_year_end}
+                          onChange={e => setFormData({ ...formData, financial_year_end: e.target.value })}
                         >
                           {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(month => (
                             <option key={month} value={month}>{month}</option>

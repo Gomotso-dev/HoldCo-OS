@@ -32,10 +32,10 @@ export function ComplianceSetupWizard({ company, isOpen, onClose, onComplete }: 
   // Step 1: Basic Details
   const [basicDetails, setBasicDetails] = useState({
     name: company.name,
-    registrationNumber: company.registrationNumber || '',
-    incorporationDate: company.incorporationDate || '',
-    financialYearEnd: company.financialYearEnd || 'February',
-    legalEntityType: company.legalEntityType || 'Private Company (Pty) Ltd'
+    registrationNumber: company.registration_number || '',
+    incorporationDate: company.incorporation_date || '',
+    financialYearEnd: company.financial_year_end || 'February',
+    legalEntityType: company.legal_entity_type || 'Private Company (Pty) Ltd'
   });
 
   // Step 2: Tax Questions
@@ -53,10 +53,10 @@ export function ComplianceSetupWizard({ company, isOpen, onClose, onComplete }: 
     if (step === 3) {
       const preview = ComplianceEngine.getPreview({
         ...company,
-        legalEntityType: basicDetails.legalEntityType,
-        incorporationDate: basicDetails.incorporationDate,
-        financialYearEnd: basicDetails.financialYearEnd
-      }, taxProfile);
+        legal_entity_type: basicDetails.legalEntityType,
+        incorporation_date: basicDetails.incorporationDate,
+        financial_year_end: basicDetails.financialYearEnd
+      } as any, taxProfile);
       setPreviewItems(preview);
     }
   }, [step, company, basicDetails, taxProfile]);
@@ -95,11 +95,11 @@ export function ComplianceSetupWizard({ company, isOpen, onClose, onComplete }: 
         .from('companies')
         .update({
           name: basicDetails.name,
-          registrationNumber: basicDetails.registrationNumber,
-          incorporationDate: basicDetails.incorporationDate,
-          financialYearEnd: basicDetails.financialYearEnd,
-          legalEntityType: basicDetails.legalEntityType,
-          updatedAt: new Date().toISOString()
+          registration_number: basicDetails.registrationNumber,
+          incorporation_date: basicDetails.incorporationDate,
+          financial_year_end: basicDetails.financialYearEnd,
+          legal_entity_type: basicDetails.legalEntityType,
+          updated_at: new Date().toISOString()
         })
         .eq('id', company.id);
 
@@ -121,16 +121,16 @@ export function ComplianceSetupWizard({ company, isOpen, onClose, onComplete }: 
       await ComplianceEngine.generateComplianceForCompany({
         ...company,
         ...basicDetails,
-        legalEntityType: basicDetails.legalEntityType,
-        incorporationDate: basicDetails.incorporationDate,
-        financialYearEnd: basicDetails.financialYearEnd
-      }, taxProfile);
+        legal_entity_type: basicDetails.legalEntityType,
+        incorporation_date: basicDetails.incorporationDate,
+        financial_year_end: basicDetails.financialYearEnd
+      } as any, taxProfile);
 
       // 4. Log Activity
       await ActivityLogService.logActivity({
-        actionType: 'setup_completed' as any,
+        action_type: 'setup_completed' as any,
         description: `Completed compliance setup for ${basicDetails.name}`,
-        companyId: company.id
+        company_id: company.id
       });
 
       setStep(4); // Success step

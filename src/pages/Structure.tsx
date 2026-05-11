@@ -17,11 +17,11 @@ export default function Structure() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingRelId, setEditingRelId] = useState<string | null>(null);
   const [relForm, setRelForm] = useState({
-    parentCompanyId: '',
-    childCompanyId: '',
-    ownershipPercentage: 100,
-    relationshipType: 'Subsidiary',
-    effectiveDate: new Date().toISOString().split('T')[0],
+    parent_company_id: '',
+    child_company_id: '',
+    ownership_percentage: 100,
+    relationship_type: 'Subsidiary',
+    effective_date: new Date().toISOString().split('T')[0],
     notes: ''
   });
 
@@ -73,21 +73,21 @@ export default function Structure() {
     if (rel) {
       setEditingRelId(rel.id);
       setRelForm({
-        parentCompanyId: rel.parentCompanyId,
-        childCompanyId: rel.childCompanyId,
-        ownershipPercentage: rel.ownershipPercentage,
-        relationshipType: rel.relationshipType,
-        effectiveDate: rel.effectiveDate || new Date().toISOString().split('T')[0],
+        parent_company_id: rel.parent_company_id,
+        child_company_id: rel.child_company_id,
+        ownership_percentage: rel.ownership_percentage,
+        relationship_type: rel.relationship_type,
+        effective_date: rel.effective_date || new Date().toISOString().split('T')[0],
         notes: rel.notes || ''
       });
     } else {
       setEditingRelId(null);
       setRelForm({
-        parentCompanyId: '',
-        childCompanyId: '',
-        ownershipPercentage: 100,
-        relationshipType: 'Subsidiary',
-        effectiveDate: new Date().toISOString().split('T')[0],
+        parent_company_id: '',
+        child_company_id: '',
+        ownership_percentage: 100,
+        relationship_type: 'Subsidiary',
+        effective_date: new Date().toISOString().split('T')[0],
         notes: ''
       });
     }
@@ -103,7 +103,7 @@ export default function Structure() {
   async function handleRelSubmit(e: React.FormEvent) {
     e.preventDefault();
     
-    if (relForm.parentCompanyId === relForm.childCompanyId) {
+    if (relForm.parent_company_id === relForm.child_company_id) {
       setError('Parent and child company cannot be the same.');
       return;
     }
@@ -116,14 +116,14 @@ export default function Structure() {
       if (!user) throw new Error('Not authenticated');
 
       const payload = {
-        parentCompanyId: relForm.parentCompanyId,
-        childCompanyId: relForm.childCompanyId,
-        ownershipPercentage: relForm.ownershipPercentage,
-        relationshipType: relForm.relationshipType,
-        effectiveDate: relForm.effectiveDate,
+        parent_company_id: relForm.parent_company_id,
+        child_company_id: relForm.child_company_id,
+        ownership_percentage: relForm.ownership_percentage,
+        relationship_type: relForm.relationship_type,
+        effective_date: relForm.effective_date,
         notes: relForm.notes,
         owner_id: user.id,
-        updatedAt: new Date().toISOString()
+        updated_at: new Date().toISOString()
       };
 
       if (editingRelId) {
@@ -136,7 +136,7 @@ export default function Structure() {
       } else {
         const { error: submitErr } = await supabase
           .from('company_relationships')
-          .insert([{ ...payload, createdAt: new Date().toISOString() }]);
+          .insert([{ ...payload, created_at: new Date().toISOString() }]);
         if (submitErr) throw submitErr;
         setSuccess('Relationship created successfully.');
       }
@@ -172,8 +172,8 @@ export default function Structure() {
     }
   }
 
-  const holdCos = companies.filter(c => c.groupRole === 'Holding Company');
-  const subsidiaries = companies.filter(c => c.groupRole !== 'Holding Company');
+  const holdCos = companies.filter(c => c.group_role === 'Holding Company');
+  const subsidiaries = companies.filter(c => c.group_role !== 'Holding Company');
 
   return (
     <div className="space-y-6">
@@ -242,7 +242,7 @@ export default function Structure() {
                   <div className="flex justify-center gap-8 mt-0">
                     {subsidiaries.map((sub, sIdx) => {
                       // Check if this sub is related to this holdCo
-                      const rel = relationships.find(r => r.parentCompanyId === holdCo.id && r.childCompanyId === sub.id);
+                      const rel = relationships.find(r => r.parent_company_id === holdCo.id && r.child_company_id === sub.id);
                       if (!rel && holdCos.length > 1) return null; // Only show if related, or if only one holdCo exists show all as fallback
 
                       return (
@@ -262,10 +262,10 @@ export default function Structure() {
                             </div>
                             <h4 className="font-bold text-sm truncate">{sub.name}</h4>
                             <div className="flex items-center justify-center mt-2 space-x-2">
-                              <span className="text-[10px] font-bold text-gray-400 uppercase">{sub.groupRole}</span>
+                              <span className="text-[10px] font-bold text-gray-400 uppercase">{sub.group_role}</span>
                               {rel && (
                                 <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-                                  {rel.ownershipPercentage}%
+                                  {rel.ownership_percentage}%
                                 </span>
                               )}
                             </div>

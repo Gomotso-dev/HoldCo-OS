@@ -31,12 +31,12 @@ import { AnimatePresence, motion } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { ActivityLogService } from '../services/activityLogService';
 
-// standardized logging helper using camelCase fields
+// standardized logging helper using snake_case fields
 const logCompanyActivity = (params: { eventType: 'create' | 'update' | 'delete', description: string, companyId?: string }) => 
   ActivityLogService.logActivity({ 
-    actionType: (params.eventType === 'create' ? 'company_created' : 'company_updated') as any, 
+    action_type: (params.eventType === 'create' ? 'company_created' : 'company_updated') as any, 
     description: params.description, 
-    companyId: params.companyId
+    company_id: params.companyId
   });
 import { Company, ComplianceItem, Document, FinanceTransaction, Shareholder, Director, ActivityLog, BeneficialOwner, CompanyLegalType, CompanyGroupRole, CompanyStatus } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
@@ -95,38 +95,38 @@ export default function CompanyProfile() {
   const [shareholderForm, setShareholderForm] = useState({
     name: '',
     type: 'Person' as 'Person' | 'Entity',
-    ownershipPercentage: 0,
-    shareClass: 'Ordinary',
-    issueDate: new Date().toISOString().split('T')[0],
+    ownership_percentage: 0,
+    share_class: 'Ordinary',
+    issue_date: new Date().toISOString().split('T')[0],
     notes: ''
   });
   const [directorForm, setDirectorForm] = useState({
-    fullName: '',
-    roleTitle: 'Director',
-    appointmentDate: new Date().toISOString().split('T')[0],
+    full_name: '',
+    role_title: 'Director',
+    appointment_date: new Date().toISOString().split('T')[0],
     email: '',
     phone: ''
   });
   const [beneficialOwnerForm, setBeneficialOwnerForm] = useState({
-    fullName: '',
-    controlType: 'Direct Ownership',
-    ownershipPercentage: 0,
-    effectiveDate: new Date().toISOString().split('T')[0],
+    full_name: '',
+    control_type: 'Direct Ownership',
+    ownership_percentage: 0,
+    effective_date: new Date().toISOString().split('T')[0],
     status: 'Active' as 'Active' | 'Inactive',
     notes: ''
   });
   const [editFormData, setEditFormData] = useState({
     name: '',
-    tradingName: '',
-    legalEntityType: 'Private Company (Pty) Ltd' as CompanyLegalType,
-    groupRole: 'Operating Company' as CompanyGroupRole,
-    registrationNumber: '',
-    incorporationDate: '',
-    financialYearEnd: 'February',
-    taxNumber: '',
-    vatNumber: '',
-    payeNumber: '',
-    uifNumber: '',
+    trading_name: '',
+    legal_entity_type: 'Private Company (Pty) Ltd' as CompanyLegalType,
+    group_role: 'Operating Company' as CompanyGroupRole,
+    registration_number: '',
+    incorporation_date: '',
+    financial_year_end: 'February',
+    tax_number: '',
+    vat_number: '',
+    paye_number: '',
+    uif_number: '',
     status: 'Active' as CompanyStatus,
     notes: '',
   });
@@ -145,56 +145,19 @@ export default function CompanyProfile() {
   async function fetchOwnership() {
     try {
       const [shRes, dirRes, boRes] = await Promise.all([
-        supabase.from('shareholders').select('*').eq('companyId', id).order('ownershipPercentage', { ascending: false }),
-        supabase.from('directors').select('*').eq('companyId', id).order('appointmentDate', { ascending: false }),
-        supabase.from('beneficial_owners').select('*').eq('companyId', id).order('ownershipPercentage', { ascending: false })
+        supabase.from('shareholders').select('*').eq('company_id', id).order('ownership_percentage', { ascending: false }),
+        supabase.from('directors').select('*').eq('company_id', id).order('appointment_date', { ascending: false }),
+        supabase.from('beneficial_owners').select('*').eq('company_id', id).order('ownership_percentage', { ascending: false })
       ]);
       
-      if (shRes.error) {
-        console.warn('Shareholders fetch failed, trying fallback...');
-        const shFallback = await supabase.from('shareholders').select('*').eq('company_id', id).order('ownership_percentage', { ascending: false });
-        setShareholders((shFallback.data || []).map((sh: any) => ({
-          ...sh,
-          companyId: sh.companyId || sh.company_id,
-          ownershipPercentage: sh.ownershipPercentage || sh.ownership_percentage,
-          shareClass: sh.shareClass || sh.share_class,
-          issueDate: sh.issueDate || sh.issue_date
-        })));
-      } else {
-        setShareholders(shRes.data || []);
-      }
+      if (shRes.error) throw shRes.error;
+      setShareholders(shRes.data || []);
 
-      if (dirRes.error) {
-        console.warn('Directors fetch failed, trying fallback...');
-        const dirFallback = await supabase.from('directors').select('*').eq('company_id', id).order('appointment_date', { ascending: false });
-        setDirectors((dirFallback.data || []).map((dir: any) => ({
-          ...dir,
-          companyId: dir.companyId || dir.company_id,
-          fullName: dir.fullName || dir.full_name,
-          roleTitle: dir.roleTitle || dir.role_title,
-          appointmentDate: dir.appointmentDate || dir.appointment_date,
-          idNumber: dir.idNumber || dir.id_number,
-          passportNumber: dir.passportNumber || dir.passport_number,
-          resignationDate: dir.resignationDate || dir.resignation_date
-        })));
-      } else {
-        setDirectors(dirRes.data || []);
-      }
+      if (dirRes.error) throw dirRes.error;
+      setDirectors(dirRes.data || []);
 
-      if (boRes.error) {
-        console.warn('Beneficial owners fetch failed, trying fallback...');
-        const boFallback = await supabase.from('beneficial_owners').select('*').eq('company_id', id).order('ownership_percentage', { ascending: false });
-        setBeneficialOwners((boFallback.data || []).map((bo: any) => ({
-          ...bo,
-          companyId: bo.companyId || bo.company_id,
-          fullName: bo.fullName || bo.full_name,
-          controlType: bo.controlType || bo.control_type,
-          ownershipPercentage: bo.ownershipPercentage || bo.ownership_percentage,
-          effectiveDate: bo.effectiveDate || bo.effective_date
-        })));
-      } else {
-        setBeneficialOwners(boRes.data || []);
-      }
+      if (boRes.error) throw boRes.error;
+      setBeneficialOwners(boRes.data || []);
     } catch (err: any) {
       console.error('Error fetching ownership data:', err.message);
     }
@@ -205,32 +168,11 @@ export default function CompanyProfile() {
       const { data, error } = await supabase
         .from('finance')
         .select('*')
-        .eq('companyId', id)
+        .eq('company_id', id)
         .order('date', { ascending: false });
 
-      if (error) {
-        console.warn('Finance fetch failed, trying fallback...');
-        const fallbackRes = await supabase
-          .from('finance')
-          .select('*')
-          .eq('company_id', id)
-          .order('date', { ascending: false });
-        
-        if (fallbackRes.error) throw fallbackRes.error;
-        const mapped = (fallbackRes.data || []).map((tx: any) => ({
-          ...tx,
-          companyId: tx.companyId || tx.company_id,
-          relatedCompanyId: tx.relatedCompanyId || tx.related_company_id,
-          paymentMethod: tx.paymentMethod || tx.payment_method,
-          referenceNumber: tx.referenceNumber || tx.reference_number,
-          linkedDocumentId: tx.linkedDocumentId || tx.linked_document_id,
-          createdAt: tx.createdAt || tx.created_at,
-          updatedAt: tx.updatedAt || tx.updated_at
-        }));
-        setFinanceTransactions(mapped);
-      } else {
-        setFinanceTransactions(data || []);
-      }
+      if (error) throw error;
+      setFinanceTransactions(data || []);
     } catch (err: any) {
       console.error('Error fetching finance:', err.message);
     }
@@ -241,28 +183,11 @@ export default function CompanyProfile() {
       const { data, error } = await supabase
         .from('documents')
         .select('*')
-        .eq('companyId', id)
-        .order('createdAt', { ascending: false });
+        .eq('company_id', id)
+        .order('created_at', { ascending: false });
 
-      if (error) {
-        console.warn('Documents fetch failed, trying fallback...');
-        const fallbackRes = await supabase
-          .from('documents')
-          .select('*')
-          .eq('company_id', id)
-          .order('created_at', { ascending: false });
-        
-        if (fallbackRes.error) throw fallbackRes.error;
-        const mapped = (fallbackRes.data || []).map((doc: any) => ({
-          ...doc,
-          companyId: doc.companyId || doc.company_id,
-          fileUrl: doc.fileUrl || doc.file_url,
-          createdAt: doc.createdAt || doc.created_at
-        }));
-        setDocuments(mapped);
-      } else {
-        setDocuments(data || []);
-      }
+      if (error) throw error;
+      setDocuments(data || []);
     } catch (err: any) {
       console.error('Error fetching documents:', err.message);
     }
@@ -273,27 +198,11 @@ export default function CompanyProfile() {
       const { data, error } = await supabase
         .from('compliance')
         .select('*')
-        .eq('companyId', id)
-        .order('dueDate', { ascending: true });
+        .eq('company_id', id)
+        .order('due_date', { ascending: true });
 
-      if (error) {
-        console.warn('Compliance fetch failed, trying fallback...');
-        const fallbackRes = await supabase
-          .from('compliance')
-          .select('*')
-          .eq('company_id', id)
-          .order('due_date', { ascending: true });
-        
-        if (fallbackRes.error) throw fallbackRes.error;
-        const mapped = (fallbackRes.data || []).map((item: any) => ({
-          ...item,
-          companyId: item.companyId || item.company_id,
-          dueDate: item.dueDate || item.due_date
-        }));
-        setComplianceItems(mapped);
-      } else {
-        setComplianceItems(data || []);
-      }
+      if (error) throw error;
+      setComplianceItems(data || []);
     } catch (err: any) {
       console.error('Error fetching compliance:', err.message);
     }
@@ -304,27 +213,11 @@ export default function CompanyProfile() {
       const { data, error } = await supabase
         .from('activity_log')
         .select('*')
-        .eq('companyId', id)
-        .order('createdAt', { ascending: false });
+        .eq('company_id', id)
+        .order('created_at', { ascending: false });
 
-      if (error) {
-        console.warn('Activity fetch failed, trying fallback...');
-        const fallbackRes = await supabase
-          .from('activity_log')
-          .select('*')
-          .eq('company_id', id)
-          .order('created_at', { ascending: false });
-        
-        if (fallbackRes.error) throw fallbackRes.error;
-        const mapped = (fallbackRes.data || []).map((log: any) => ({
-          ...log,
-          companyId: log.companyId || log.company_id,
-          createdAt: log.createdAt || log.created_at
-        }));
-        setActivityLogs(mapped);
-      } else {
-        setActivityLogs(data || []);
-      }
+      if (error) throw error;
+      setActivityLogs(data || []);
     } catch (err: any) {
       console.error('Error fetching activity:', err.message);
     }
@@ -347,16 +240,16 @@ export default function CompanyProfile() {
       setCompany(data);
       setEditFormData({
         name: data.name,
-        tradingName: data.tradingName || '',
-        legalEntityType: data.legalEntityType,
-        groupRole: data.groupRole,
-        registrationNumber: data.registrationNumber,
-        incorporationDate: data.incorporationDate,
-        financialYearEnd: data.financialYearEnd,
-        taxNumber: data.taxNumber || '',
-        vatNumber: data.vatNumber || '',
-        payeNumber: data.payeNumber || '',
-        uifNumber: data.uifNumber || '',
+        trading_name: data.trading_name || '',
+        legal_entity_type: data.legal_entity_type,
+        group_role: data.group_role,
+        registration_number: data.registration_number,
+        incorporation_date: data.incorporation_date,
+        financial_year_end: data.financial_year_end,
+        tax_number: data.tax_number || '',
+        vat_number: data.vat_number || '',
+        paye_number: data.paye_number || '',
+        uif_number: data.uif_number || '',
         status: data.status,
         notes: data.notes || '',
       });
@@ -369,22 +262,22 @@ export default function CompanyProfile() {
   }
 
   // Helper to get clean storage path from URL or path
-  function getStoragePath(fileUrl: string) {
-    if (!fileUrl) return '';
-    if (fileUrl.includes('/storage/v1/object/')) {
-      const parts = fileUrl.split('/documents/');
+  function getStoragePath(file_url: string) {
+    if (!file_url) return '';
+    if (file_url.includes('/storage/v1/object/')) {
+      const parts = file_url.split('/documents/');
       return parts[parts.length - 1];
     }
-    if (fileUrl.startsWith('documents/')) {
-      return fileUrl.replace(/^documents\//, '');
+    if (file_url.startsWith('documents/')) {
+      return file_url.replace(/^documents\//, '');
     }
-    return fileUrl;
+    return file_url;
   }
 
   async function handleDownload(doc: Document) {
     try {
       setDownloadingId(doc.id);
-      const path = getStoragePath(doc.fileUrl);
+      const path = getStoragePath(doc.file_url);
       if (!path) throw new Error('Document path not found.');
 
       const { data, error } = await supabase.storage
@@ -411,12 +304,12 @@ export default function CompanyProfile() {
       if (!user) throw new Error('Not authenticated');
 
       const payload = {
-        companyId: id,
+        company_id: id,
         name: shareholderForm.name,
         type: shareholderForm.type,
-        ownershipPercentage: shareholderForm.ownershipPercentage,
-        shareClass: shareholderForm.shareClass,
-        issueDate: shareholderForm.issueDate,
+        ownership_percentage: shareholderForm.ownership_percentage,
+        share_class: shareholderForm.share_class,
+        issue_date: shareholderForm.issue_date,
         notes: shareholderForm.notes,
         owner_id: user.id
       };
@@ -426,7 +319,7 @@ export default function CompanyProfile() {
           .from('shareholders')
           .update({
             ...payload,
-            updatedAt: new Date().toISOString()
+            updated_at: new Date().toISOString()
           })
           .eq('id', editingShareholderId)
           .eq('owner_id', user.id);
@@ -443,7 +336,7 @@ export default function CompanyProfile() {
           .from('shareholders')
           .insert([{
             ...payload,
-            createdAt: new Date().toISOString()
+            created_at: new Date().toISOString()
           }]);
 
         if (error) throw error;
@@ -473,9 +366,9 @@ export default function CompanyProfile() {
     setShareholderForm({
       name: '',
       type: 'Person',
-      ownershipPercentage: 0,
-      shareClass: 'Ordinary',
-      issueDate: new Date().toISOString().split('T')[0],
+      ownership_percentage: 0,
+      share_class: 'Ordinary',
+      issue_date: new Date().toISOString().split('T')[0],
       notes: ''
     });
   }
@@ -486,9 +379,9 @@ export default function CompanyProfile() {
     setShareholderForm({
       name: '',
       type: 'Person',
-      ownershipPercentage: 0,
-      shareClass: 'Ordinary',
-      issueDate: new Date().toISOString().split('T')[0],
+      ownership_percentage: 0,
+      share_class: 'Ordinary',
+      issue_date: new Date().toISOString().split('T')[0],
       notes: ''
     });
     setIsShareholderModalOpen(true);
@@ -498,9 +391,9 @@ export default function CompanyProfile() {
     setShareholderForm({
       name: sh.name,
       type: sh.type,
-      ownershipPercentage: sh.ownershipPercentage,
-      shareClass: sh.shareClass,
-      issueDate: sh.issueDate,
+      ownership_percentage: sh.ownership_percentage,
+      share_class: sh.share_class,
+      issue_date: sh.issue_date,
       notes: sh.notes || ''
     });
     setEditingShareholderId(sh.id);
@@ -516,10 +409,10 @@ export default function CompanyProfile() {
       if (!user) throw new Error('Not authenticated');
 
       const payload = {
-        companyId: id,
-        fullName: directorForm.fullName,
-        roleTitle: directorForm.roleTitle,
-        appointmentDate: directorForm.appointmentDate,
+        company_id: id,
+        full_name: directorForm.full_name,
+        role_title: directorForm.role_title,
+        appointment_date: directorForm.appointment_date,
         email: directorForm.email,
         phone: directorForm.phone,
         owner_id: user.id
@@ -530,7 +423,7 @@ export default function CompanyProfile() {
           .from('directors')
           .update({
             ...payload,
-            updatedAt: new Date().toISOString()
+            updated_at: new Date().toISOString()
           })
           .eq('id', editingDirectorId)
           .eq('owner_id', user.id);
@@ -539,7 +432,7 @@ export default function CompanyProfile() {
 
         await logCompanyActivity({
           eventType: 'update',
-          description: `Updated director info: ${directorForm.fullName}`,
+          description: `Updated director info: ${directorForm.full_name}`,
           companyId: id
         });
       } else {
@@ -547,19 +440,19 @@ export default function CompanyProfile() {
           .from('directors')
           .insert([{
             ...payload,
-            createdAt: new Date().toISOString()
+            created_at: new Date().toISOString()
           }]);
 
         if (error) throw error;
 
         await logCompanyActivity({
           eventType: 'create',
-          description: `Appointed director: ${directorForm.fullName}`,
+          description: `Appointed director: ${directorForm.full_name}`,
           companyId: id
         });
       }
 
-      setSuccess(`Director "${directorForm.fullName}" successfully ${isDirectorEditMode ? 'updated' : 'appointed'}.`);
+      setSuccess(`Director "${directorForm.full_name}" successfully ${isDirectorEditMode ? 'updated' : 'appointed'}.`);
       closeDirectorModal();
       fetchOwnership();
     } catch (err: any) {
@@ -575,9 +468,9 @@ export default function CompanyProfile() {
     setIsDirectorEditMode(false);
     setEditingDirectorId(null);
     setDirectorForm({
-      fullName: '',
-      roleTitle: 'Director',
-      appointmentDate: new Date().toISOString().split('T')[0],
+      full_name: '',
+      role_title: 'Director',
+      appointment_date: new Date().toISOString().split('T')[0],
       email: '',
       phone: ''
     });
@@ -587,9 +480,9 @@ export default function CompanyProfile() {
     setIsDirectorEditMode(false);
     setEditingDirectorId(null);
     setDirectorForm({
-      fullName: '',
-      roleTitle: 'Director',
-      appointmentDate: new Date().toISOString().split('T')[0],
+      full_name: '',
+      role_title: 'Director',
+      appointment_date: new Date().toISOString().split('T')[0],
       email: '',
       phone: ''
     });
@@ -598,9 +491,9 @@ export default function CompanyProfile() {
 
   function openDirectorEditModal(dir: any) {
     setDirectorForm({
-      fullName: dir.fullName,
-      roleTitle: dir.roleTitle,
-      appointmentDate: dir.appointmentDate,
+      full_name: dir.full_name,
+      role_title: dir.role_title,
+      appointment_date: dir.appointment_date,
       email: dir.email || '',
       phone: dir.phone || ''
     });
@@ -657,11 +550,11 @@ export default function CompanyProfile() {
       if (!user) throw new Error('Not authenticated');
 
       const payload = {
-        companyId: id,
-        fullName: beneficialOwnerForm.fullName,
-        controlType: beneficialOwnerForm.controlType,
-        ownershipPercentage: beneficialOwnerForm.ownershipPercentage,
-        effectiveDate: beneficialOwnerForm.effectiveDate,
+        company_id: id,
+        full_name: beneficialOwnerForm.full_name,
+        control_type: beneficialOwnerForm.control_type,
+        ownership_percentage: beneficialOwnerForm.ownership_percentage,
+        effective_date: beneficialOwnerForm.effective_date,
         status: beneficialOwnerForm.status,
         notes: beneficialOwnerForm.notes,
         owner_id: user.id
@@ -672,7 +565,7 @@ export default function CompanyProfile() {
           .from('beneficial_owners')
           .update({
             ...payload,
-            updatedAt: new Date().toISOString()
+            updated_at: new Date().toISOString()
           })
           .eq('id', editingBeneficialOwnerId)
           .eq('owner_id', user.id);
@@ -681,7 +574,7 @@ export default function CompanyProfile() {
 
         await logCompanyActivity({
           eventType: 'update',
-          description: `Updated beneficial owner info: ${beneficialOwnerForm.fullName}`,
+          description: `Updated beneficial owner info: ${beneficialOwnerForm.full_name}`,
           companyId: id
         });
       } else {
@@ -689,19 +582,19 @@ export default function CompanyProfile() {
           .from('beneficial_owners')
           .insert([{
             ...payload,
-            createdAt: new Date().toISOString()
+            created_at: new Date().toISOString()
           }]);
 
         if (error) throw error;
 
         await logCompanyActivity({
           eventType: 'create',
-          description: `Added beneficial owner: ${beneficialOwnerForm.fullName}`,
+          description: `Added beneficial owner: ${beneficialOwnerForm.full_name}`,
           companyId: id
         });
       }
 
-      setSuccess(`Beneficial owner "${beneficialOwnerForm.fullName}" successfully ${isBeneficialOwnerEditMode ? 'updated' : 'added'}.`);
+      setSuccess(`Beneficial owner "${beneficialOwnerForm.full_name}" successfully ${isBeneficialOwnerEditMode ? 'updated' : 'added'}.`);
       closeBeneficialOwnerModal();
       fetchOwnership();
     } catch (err: any) {
@@ -717,10 +610,10 @@ export default function CompanyProfile() {
     setIsBeneficialOwnerEditMode(false);
     setEditingBeneficialOwnerId(null);
     setBeneficialOwnerForm({
-      fullName: '',
-      controlType: 'Direct Ownership',
-      ownershipPercentage: 0,
-      effectiveDate: new Date().toISOString().split('T')[0],
+      full_name: '',
+      control_type: 'Direct Ownership',
+      ownership_percentage: 0,
+      effective_date: new Date().toISOString().split('T')[0],
       status: 'Active',
       notes: ''
     });
@@ -730,10 +623,10 @@ export default function CompanyProfile() {
     setIsBeneficialOwnerEditMode(false);
     setEditingBeneficialOwnerId(null);
     setBeneficialOwnerForm({
-      fullName: '',
-      controlType: 'Direct Ownership',
-      ownershipPercentage: 0,
-      effectiveDate: new Date().toISOString().split('T')[0],
+      full_name: '',
+      control_type: 'Direct Ownership',
+      ownership_percentage: 0,
+      effective_date: new Date().toISOString().split('T')[0],
       status: 'Active',
       notes: ''
     });
@@ -742,10 +635,10 @@ export default function CompanyProfile() {
 
   function openBeneficialOwnerEditModal(bo: any) {
     setBeneficialOwnerForm({
-      fullName: bo.fullName,
-      controlType: bo.controlType,
-      ownershipPercentage: bo.ownershipPercentage,
-      effectiveDate: bo.effectiveDate,
+      full_name: bo.full_name,
+      control_type: bo.control_type,
+      ownership_percentage: bo.ownership_percentage,
+      effective_date: bo.effective_date,
       status: bo.status,
       notes: bo.notes || ''
     });
@@ -782,28 +675,28 @@ export default function CompanyProfile() {
         .from('companies')
         .update({
           name: editFormData.name,
-          tradingName: editFormData.tradingName || null,
-          legalEntityType: editFormData.legalEntityType,
-          groupRole: editFormData.groupRole,
-          registrationNumber: editFormData.registrationNumber,
-          incorporationDate: editFormData.incorporationDate,
-          financialYearEnd: editFormData.financialYearEnd,
-          taxNumber: editFormData.taxNumber || null,
-          vatNumber: editFormData.vatNumber || null,
-          payeNumber: editFormData.payeNumber || null,
-          uifNumber: editFormData.uifNumber || null,
+          trading_name: editFormData.trading_name || null,
+          legal_entity_type: editFormData.legal_entity_type,
+          group_role: editFormData.group_role,
+          registration_number: editFormData.registration_number,
+          incorporation_date: editFormData.incorporation_date,
+          financial_year_end: editFormData.financial_year_end,
+          tax_number: editFormData.tax_number || null,
+          vat_number: editFormData.vat_number || null,
+          paye_number: editFormData.paye_number || null,
+          uif_number: editFormData.uif_number || null,
           status: editFormData.status,
           notes: editFormData.notes || null,
-          updatedAt: new Date().toISOString()
+          updated_at: new Date().toISOString()
         })
         .eq('id', id);
 
       if (error) throw error;
 
       await ActivityLogService.logActivity({
-        actionType: 'company_updated' as any,
+        action_type: 'company_updated' as any,
         description: `Updated company details for ${editFormData.name}`,
-        companyId: id as string
+        company_id: id as string
       });
 
       setIsEditModalOpen(false);
@@ -869,7 +762,7 @@ export default function CompanyProfile() {
               <h2 className="text-2xl font-bold text-gray-900 tracking-tight">{company.name}</h2>
               <StatusBadge status={company.status} />
             </div>
-            <p className="text-gray-400 font-mono text-xs mt-1 uppercase tracking-widest">{company.registrationNumber}</p>
+            <p className="text-gray-400 font-mono text-xs mt-1 uppercase tracking-widest">{company.registration_number}</p>
           </div>
         </div>
         <div className="flex items-center space-x-3">
@@ -949,8 +842,8 @@ export default function CompanyProfile() {
                       <input
                         type="text"
                         className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                        value={editFormData.tradingName}
-                        onChange={e => setEditFormData({ ...editFormData, tradingName: e.target.value })}
+                        value={editFormData.trading_name}
+                        onChange={e => setEditFormData({ ...editFormData, trading_name: e.target.value })}
                       />
                     </div>
                     <div>
@@ -958,8 +851,8 @@ export default function CompanyProfile() {
                       <select
                         required
                         className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                        value={editFormData.legalEntityType}
-                        onChange={e => setEditFormData({ ...editFormData, legalEntityType: e.target.value as CompanyLegalType })}
+                        value={editFormData.legal_entity_type}
+                        onChange={e => setEditFormData({ ...editFormData, legal_entity_type: e.target.value as CompanyLegalType })}
                       >
                         <option value="Private Company (Pty) Ltd">Private Company (Pty) Ltd</option>
                         <option value="Public Company (Ltd)">Public Company (Ltd)</option>
@@ -977,8 +870,8 @@ export default function CompanyProfile() {
                       <select
                         required
                         className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                        value={editFormData.groupRole}
-                        onChange={e => setEditFormData({ ...editFormData, groupRole: e.target.value as CompanyGroupRole })}
+                        value={editFormData.group_role}
+                        onChange={e => setEditFormData({ ...editFormData, group_role: e.target.value as CompanyGroupRole })}
                       >
                         <option value="Holding Company">Holding Company</option>
                         <option value="Subsidiary">Subsidiary</option>
@@ -1013,8 +906,8 @@ export default function CompanyProfile() {
                         required
                         type="text"
                         className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                        value={editFormData.registrationNumber}
-                        onChange={e => setEditFormData({ ...editFormData, registrationNumber: e.target.value })}
+                        value={editFormData.registration_number}
+                        onChange={e => setEditFormData({ ...editFormData, registration_number: e.target.value })}
                       />
                     </div>
                     <div>
@@ -1023,8 +916,8 @@ export default function CompanyProfile() {
                         required
                         type="date"
                         className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                        value={editFormData.incorporationDate}
-                        onChange={e => setEditFormData({ ...editFormData, incorporationDate: e.target.value })}
+                        value={editFormData.incorporation_date}
+                        onChange={e => setEditFormData({ ...editFormData, incorporation_date: e.target.value })}
                       />
                     </div>
                     <div>
@@ -1032,8 +925,8 @@ export default function CompanyProfile() {
                       <select
                         required
                         className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                        value={editFormData.financialYearEnd}
-                        onChange={e => setEditFormData({ ...editFormData, financialYearEnd: e.target.value })}
+                        value={editFormData.financial_year_end}
+                        onChange={e => setEditFormData({ ...editFormData, financial_year_end: e.target.value })}
                       >
                         {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(month => (
                           <option key={month} value={month}>{month}</option>
@@ -1045,8 +938,8 @@ export default function CompanyProfile() {
                       <input
                         type="text"
                         className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                        value={editFormData.taxNumber}
-                        onChange={e => setEditFormData({ ...editFormData, taxNumber: e.target.value })}
+                        value={editFormData.tax_number}
+                        onChange={e => setEditFormData({ ...editFormData, tax_number: e.target.value })}
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -1055,8 +948,8 @@ export default function CompanyProfile() {
                         <input
                           type="text"
                           className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                          value={editFormData.vatNumber}
-                          onChange={e => setEditFormData({ ...editFormData, vatNumber: e.target.value })}
+                          value={editFormData.vat_number}
+                          onChange={e => setEditFormData({ ...editFormData, vat_number: e.target.value })}
                         />
                       </div>
                       <div>
@@ -1064,8 +957,8 @@ export default function CompanyProfile() {
                         <input
                           type="text"
                           className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                          value={editFormData.payeNumber}
-                          onChange={e => setEditFormData({ ...editFormData, payeNumber: e.target.value })}
+                          value={editFormData.paye_number}
+                          onChange={e => setEditFormData({ ...editFormData, paye_number: e.target.value })}
                         />
                       </div>
                     </div>
@@ -1153,8 +1046,8 @@ export default function CompanyProfile() {
                       type="number"
                       step="0.01"
                       className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                      value={shareholderForm.ownershipPercentage}
-                      onChange={e => setShareholderForm({ ...shareholderForm, ownershipPercentage: parseFloat(e.target.value) })}
+                      value={shareholderForm.ownership_percentage}
+                      onChange={e => setShareholderForm({ ...shareholderForm, ownership_percentage: parseFloat(e.target.value) })}
                     />
                   </div>
                 </div>
@@ -1165,8 +1058,8 @@ export default function CompanyProfile() {
                       required
                       type="text"
                       className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                      value={shareholderForm.shareClass}
-                      onChange={e => setShareholderForm({ ...shareholderForm, shareClass: e.target.value })}
+                      value={shareholderForm.share_class}
+                      onChange={e => setShareholderForm({ ...shareholderForm, share_class: e.target.value })}
                     />
                   </div>
                   <div>
@@ -1175,8 +1068,8 @@ export default function CompanyProfile() {
                       required
                       type="date"
                       className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                      value={shareholderForm.issueDate}
-                      onChange={e => setShareholderForm({ ...shareholderForm, issueDate: e.target.value })}
+                      value={shareholderForm.issue_date}
+                      onChange={e => setShareholderForm({ ...shareholderForm, issue_date: e.target.value })}
                     />
                   </div>
                 </div>
@@ -1215,8 +1108,8 @@ export default function CompanyProfile() {
                     required
                     type="text"
                     className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                    value={directorForm.fullName}
-                    onChange={e => setDirectorForm({ ...directorForm, fullName: e.target.value })}
+                    value={directorForm.full_name}
+                    onChange={e => setDirectorForm({ ...directorForm, full_name: e.target.value })}
                   />
                 </div>
                 <div>
@@ -1225,8 +1118,8 @@ export default function CompanyProfile() {
                     required
                     type="text"
                     className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                    value={directorForm.roleTitle}
-                    onChange={e => setDirectorForm({ ...directorForm, roleTitle: e.target.value })}
+                    value={directorForm.role_title}
+                    onChange={e => setDirectorForm({ ...directorForm, role_title: e.target.value })}
                   />
                 </div>
                 <div>
@@ -1235,8 +1128,8 @@ export default function CompanyProfile() {
                     required
                     type="date"
                     className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                    value={directorForm.appointmentDate}
-                    onChange={e => setDirectorForm({ ...directorForm, appointmentDate: e.target.value })}
+                    value={directorForm.appointment_date}
+                    onChange={e => setDirectorForm({ ...directorForm, appointment_date: e.target.value })}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -1294,16 +1187,16 @@ export default function CompanyProfile() {
                     required
                     type="text"
                     className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                    value={beneficialOwnerForm.fullName}
-                    onChange={e => setBeneficialOwnerForm({ ...beneficialOwnerForm, fullName: e.target.value })}
+                    value={beneficialOwnerForm.full_name}
+                    onChange={e => setBeneficialOwnerForm({ ...beneficialOwnerForm, full_name: e.target.value })}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Control Type</label>
                   <select
                     className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                    value={beneficialOwnerForm.controlType}
-                    onChange={e => setBeneficialOwnerForm({ ...beneficialOwnerForm, controlType: e.target.value })}
+                    value={beneficialOwnerForm.control_type}
+                    onChange={e => setBeneficialOwnerForm({ ...beneficialOwnerForm, control_type: e.target.value })}
                   >
                     <option value="Direct Ownership">Direct Ownership</option>
                     <option value="Indirect Ownership">Indirect Ownership</option>
@@ -1319,8 +1212,8 @@ export default function CompanyProfile() {
                       type="number"
                       step="0.01"
                       className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                      value={beneficialOwnerForm.ownershipPercentage}
-                      onChange={e => setBeneficialOwnerForm({ ...beneficialOwnerForm, ownershipPercentage: parseFloat(e.target.value) })}
+                      value={beneficialOwnerForm.ownership_percentage}
+                      onChange={e => setBeneficialOwnerForm({ ...beneficialOwnerForm, ownership_percentage: parseFloat(e.target.value) })}
                     />
                   </div>
                   <div>
@@ -1329,8 +1222,8 @@ export default function CompanyProfile() {
                       required
                       type="date"
                       className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                      value={beneficialOwnerForm.effectiveDate}
-                      onChange={e => setBeneficialOwnerForm({ ...beneficialOwnerForm, effectiveDate: e.target.value })}
+                      value={beneficialOwnerForm.effective_date}
+                      onChange={e => setBeneficialOwnerForm({ ...beneficialOwnerForm, effective_date: e.target.value })}
                     />
                   </div>
                 </div>
@@ -1439,27 +1332,27 @@ export default function CompanyProfile() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8">
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Trading Name</p>
-                    <p className="text-sm font-medium text-gray-900">{company.tradingName || 'N/A'}</p>
+                    <p className="text-sm font-medium text-gray-900">{company.trading_name || 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Legal Entity Type</p>
-                    <p className="text-sm font-medium text-gray-900">{company.legalEntityType}</p>
+                    <p className="text-sm font-medium text-gray-900">{company.legal_entity_type}</p>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Group Role</p>
-                    <p className="text-sm font-medium text-gray-900">{company.groupRole}</p>
+                    <p className="text-sm font-medium text-gray-900">{company.group_role}</p>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Incorporation Date</p>
-                    <p className="text-sm font-medium text-gray-900">{company.incorporationDate}</p>
+                    <p className="text-sm font-medium text-gray-900">{company.incorporation_date}</p>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Financial Year End</p>
-                    <p className="text-sm font-medium text-gray-900">{company.financialYearEnd}</p>
+                    <p className="text-sm font-medium text-gray-900">{company.financial_year_end}</p>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Registration Number</p>
-                    <p className="text-sm font-medium text-gray-900">{company.registrationNumber}</p>
+                    <p className="text-sm font-medium text-gray-900">{company.registration_number}</p>
                   </div>
                 </div>
               </div>
@@ -1509,10 +1402,10 @@ export default function CompanyProfile() {
                   {complianceItems.length > 0 ? (
                     complianceItems
                       .filter(i => i.status !== 'Completed' && i.status !== 'Cancelled')
-                      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+                      .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
                       .slice(0, 3)
                       .map((item) => {
-                        const daysLeft = Math.ceil((new Date(item.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                        const daysLeft = Math.ceil((new Date(item.due_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
                         const isOverdue = daysLeft < 0;
                         
                         return (
@@ -1552,7 +1445,7 @@ export default function CompanyProfile() {
                           "flex items-center space-x-3 group cursor-pointer",
                           downloadingId === doc.id && "opacity-50 pointer-events-none"
                         )}
-                        onClick={() => doc.fileUrl && handleDownload(doc)}
+                        onClick={() => doc.file_url && handleDownload(doc)}
                       >
                         <div className="p-2 bg-gray-50 rounded-lg text-gray-400 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-all">
                           {downloadingId === doc.id ? (
@@ -1563,7 +1456,7 @@ export default function CompanyProfile() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">{doc.title}</p>
-                          <p className="text-xs text-gray-500">Uploaded {doc.createdAt.split('T')[0]}</p>
+                          <p className="text-xs text-gray-500">Uploaded {doc.created_at.split('T')[0]}</p>
                         </div>
                         <Download className="h-4 w-4 text-gray-300 group-hover:text-gray-600" />
                       </div>
@@ -1584,28 +1477,28 @@ export default function CompanyProfile() {
               <div className="space-y-1">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Income Tax Number</label>
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
-                  <span className="font-mono text-gray-900">{company.taxNumber}</span>
+                  <span className="font-mono text-gray-900">{company.tax_number}</span>
                   <button className="text-xs text-indigo-600 font-bold hover:underline">Copy</button>
                 </div>
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">VAT Number</label>
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
-                  <span className="font-mono text-gray-900">{company.vatNumber}</span>
+                  <span className="font-mono text-gray-900">{company.vat_number}</span>
                   <button className="text-xs text-indigo-600 font-bold hover:underline">Copy</button>
                 </div>
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">PAYE Number</label>
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
-                  <span className="font-mono text-gray-900">{company.payeNumber}</span>
+                  <span className="font-mono text-gray-900">{company.paye_number}</span>
                   <button className="text-xs text-indigo-600 font-bold hover:underline">Copy</button>
                 </div>
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">UIF Number</label>
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
-                  <span className="font-mono text-gray-900">{company.uifNumber}</span>
+                  <span className="font-mono text-gray-900">{company.uif_number}</span>
                   <button className="text-xs text-indigo-600 font-bold hover:underline">Copy</button>
                 </div>
               </div>
@@ -1657,7 +1550,7 @@ export default function CompanyProfile() {
                         </div>
                         <div>
                           <h4 className="text-sm font-bold text-gray-900">{item.title}</h4>
-                          <p className="text-xs text-gray-500 mt-0.5">{item.type} • Due {item.dueDate}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">{item.type} • Due {item.due_date}</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-4">
@@ -1708,11 +1601,11 @@ export default function CompanyProfile() {
                         </div>
                         <div>
                           <h4 className="text-sm font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">{doc.title}</h4>
-                          <p className="text-xs text-gray-500 mt-0.5">{doc.category} • Uploaded {doc.createdAt.split('T')[0]}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">{doc.category} • Uploaded {doc.created_at.split('T')[0]}</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {doc.fileUrl && (
+                        {doc.file_url && (
                           <button 
                             onClick={() => handleDownload(doc)}
                             disabled={downloadingId === doc.id}
@@ -1815,7 +1708,7 @@ export default function CompanyProfile() {
                           {tx.type === 'Income' ? '+' : tx.type === 'Expense' ? '-' : ''}
                           R {tx.amount.toLocaleString()}
                         </p>
-                        <p className="text-[10px] text-gray-400 uppercase font-bold">{tx.paymentMethod}</p>
+                        <p className="text-[10px] text-gray-400 uppercase font-bold">{tx.payment_method}</p>
                       </div>
                     </div>
                   ))}
@@ -1853,19 +1746,19 @@ export default function CompanyProfile() {
                       <div className="flex items-center space-x-4">
                         <div className={cn(
                           "p-2 rounded-lg",
-                          log.entityType === 'document' ? "bg-blue-50 text-blue-600" :
-                          log.entityType === 'compliance' ? "bg-amber-50 text-amber-600" :
-                          log.entityType === 'finance' ? "bg-emerald-50 text-emerald-600" :
-                          log.entityType === 'company' ? "bg-purple-50 text-purple-600" : "bg-gray-50 text-gray-600"
+                          log.entity_type === 'document' ? "bg-blue-50 text-blue-600" :
+                          log.entity_type === 'compliance' ? "bg-amber-50 text-amber-600" :
+                          log.entity_type === 'finance' ? "bg-emerald-50 text-emerald-600" :
+                          log.entity_type === 'company' ? "bg-purple-50 text-purple-600" : "bg-gray-50 text-gray-600"
                         )}>
-                          {log.entityType === 'document' ? <FileText className="h-5 w-5" /> :
-                           log.entityType === 'compliance' ? <Clock className="h-5 w-5" /> :
-                           log.entityType === 'finance' ? <Wallet className="h-5 w-5" /> : 
-                           log.entityType === 'company' ? <Building2 className="h-5 w-5" /> : <ArrowRightLeft className="h-5 w-5" />}
+                          {log.entity_type === 'document' ? <FileText className="h-5 w-5" /> :
+                           log.entity_type === 'compliance' ? <Clock className="h-5 w-5" /> :
+                           log.entity_type === 'finance' ? <Wallet className="h-5 w-5" /> : 
+                           log.entity_type === 'company' ? <Building2 className="h-5 w-5" /> : <ArrowRightLeft className="h-5 w-5" />}
                         </div>
                         <div>
                           <h4 className="text-sm font-bold text-gray-900">{log.description}</h4>
-                          <p className="text-xs text-gray-500 mt-0.5">{formatRelativeTime(log.createdAt)}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">{formatRelativeTime(log.created_at)}</p>
                         </div>
                       </div>
                     </div>
@@ -1908,12 +1801,12 @@ export default function CompanyProfile() {
                             </div>
                             <div>
                               <p className="text-sm font-bold text-gray-900">{sh.name}</p>
-                              <p className="text-xs text-gray-500">{sh.type} • {sh.shareClass}</p>
+                              <p className="text-xs text-gray-500">{sh.type} • {sh.share_class}</p>
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
                             <div className="text-right mr-2">
-                              <p className="text-sm font-bold text-gray-900">{sh.ownershipPercentage}%</p>
+                              <p className="text-sm font-bold text-gray-900">{sh.ownership_percentage}%</p>
                               <p className="text-[10px] text-gray-400 font-bold uppercase">Ownership</p>
                             </div>
                             <button 
@@ -1961,17 +1854,17 @@ export default function CompanyProfile() {
                         <div key={dir.id} className="p-4 flex items-center justify-between">
                           <div className="flex items-center space-x-3">
                             <div className="h-10 w-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 font-bold">
-                              {dir.fullName.charAt(0)}
+                              {dir.full_name.charAt(0)}
                             </div>
                             <div>
-                              <p className="text-sm font-bold text-gray-900">{dir.fullName}</p>
-                              <p className="text-xs text-gray-500">{dir.roleTitle}</p>
+                              <p className="text-sm font-bold text-gray-900">{dir.full_name}</p>
+                              <p className="text-xs text-gray-500">{dir.role_title}</p>
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
                             <div className="text-right mr-2">
                               <p className="text-xs font-medium text-gray-600">Appointed</p>
-                              <p className="text-[10px] text-gray-400 font-bold uppercase">{dir.appointmentDate}</p>
+                              <p className="text-[10px] text-gray-400 font-bold uppercase">{dir.appointment_date}</p>
                             </div>
                             <button 
                               onClick={() => openDirectorEditModal(dir)}
@@ -1981,7 +1874,7 @@ export default function CompanyProfile() {
                               <Edit3 className="h-4 w-4" />
                             </button>
                             <button 
-                              onClick={() => handleDeleteDirector(dir.id, dir.fullName)}
+                              onClick={() => handleDeleteDirector(dir.id, dir.full_name)}
                               className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                               title="Delete"
                             >
@@ -2018,16 +1911,16 @@ export default function CompanyProfile() {
                         <div key={bo.id} className="p-4 flex items-center justify-between">
                           <div className="flex items-center space-x-3">
                             <div className="h-10 w-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 font-bold">
-                              {bo.fullName.charAt(0)}
+                              {bo.full_name.charAt(0)}
                             </div>
                             <div>
-                              <p className="text-sm font-bold text-gray-900">{bo.fullName}</p>
-                              <p className="text-xs text-gray-500">{bo.controlType} • {bo.status}</p>
+                              <p className="text-sm font-bold text-gray-900">{bo.full_name}</p>
+                              <p className="text-xs text-gray-500">{bo.control_type} • {bo.status}</p>
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
                             <div className="text-right mr-2">
-                              <p className="text-sm font-bold text-gray-900">{bo.ownershipPercentage}%</p>
+                              <p className="text-sm font-bold text-gray-900">{bo.ownership_percentage}%</p>
                               <p className="text-[10px] text-gray-400 font-bold uppercase">Control</p>
                             </div>
                             <button 
@@ -2038,7 +1931,7 @@ export default function CompanyProfile() {
                               <Edit3 className="h-4 w-4" />
                             </button>
                             <button 
-                              onClick={() => handleDeleteBeneficialOwner(bo.id, bo.fullName)}
+                              onClick={() => handleDeleteBeneficialOwner(bo.id, bo.full_name)}
                               className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                               title="Delete"
                             >

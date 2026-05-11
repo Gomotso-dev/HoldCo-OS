@@ -78,42 +78,29 @@ export default function Settings() {
     try {
       setSaving(true);
       
-      // 1. Reset all companies to Operating Company (or keep their current role if not holding)
-      // Actually, user suggested setting others to Operating Company
+      // 1. Reset all companies to Operating Company
       const { error: resetError } = await supabase
         .from('companies')
         .update({ 
-          groupRole: 'Operating Company',
-          group_role: 'Operating Company' // handle both cases
+          group_role: 'Operating Company'
         })
         .eq('owner_id', user.id);
 
-      if (resetError) {
-        // Fallback for snake_case
-        await supabase
-          .from('companies')
-          .update({ group_role: 'Operating Company' })
-          .eq('owner_id', user.id);
-      }
+      if (resetError) throw resetError;
 
       // 2. Set the selected company as Holding Company
       const { error: setError } = await supabase
         .from('companies')
         .update({ 
-          groupRole: 'Holding Company',
           group_role: 'Holding Company'
         })
         .eq('id', companyId);
 
-      if (setError) {
-          await supabase
-            .from('companies')
-            .update({ group_role: 'Holding Company' })
-            .eq('id', companyId);
-      }
+      if (setError) throw setError;
 
       await ActivityLogService.logActivity({
-        actionType: 'settings_updated',
+        action_type: 'settings_updated',
+        company_id: companyId,
         description: `Set "${allCompanies.find(c => c.id === companyId)?.name}" as the main holding company`,
       });
 
@@ -237,7 +224,7 @@ export default function Settings() {
                 <button 
                   onClick={async () => {
                     await ActivityLogService.logActivity({
-                      actionType: 'settings_updated',
+                      action_type: 'settings_updated',
                       description: 'Updated user profile settings'
                     });
                     alert('Profile updated successfully (Simulator)');
@@ -267,7 +254,7 @@ export default function Settings() {
                         </span>
                         <span className="mx-2 text-gray-300">•</span>
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                          {holdingCompany.legalEntityType || holdingCompany.legal_entity_type}
+                          {holdingCompany.legal_entity_type}
                         </span>
                       </div>
                     )}
@@ -326,7 +313,7 @@ export default function Settings() {
                                </div>
                                <div>
                                  <h5 className="text-sm font-bold text-gray-900">{company.name}</h5>
-                                 <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">{company.legalEntityType || company.legal_entity_type}</p>
+                                 <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">{company.legal_entity_type}</p>
                                </div>
                              </div>
                              
@@ -353,13 +340,13 @@ export default function Settings() {
                         <div className="space-y-1.5">
                           <label className="text-xs font-bold text-gray-400 uppercase tracking-widest px-1">Registration Number</label>
                           <div className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl font-medium text-gray-700">
-                            {holdingCompany.registrationNumber || holdingCompany.registration_number}
+                            {holdingCompany.registration_number}
                           </div>
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-xs font-bold text-gray-400 uppercase tracking-widest px-1">Tax Reference</label>
                           <div className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl font-medium text-gray-700">
-                            {holdingCompany.taxNumber || holdingCompany.tax_number || 'Not Recorded'}
+                            {holdingCompany.tax_number || 'Not Recorded'}
                           </div>
                         </div>
                         <div className="space-y-1.5">

@@ -65,13 +65,13 @@ export default function Documentation() {
             <h4 className="font-bold text-gray-900 mb-4">Table: companies</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
               <div className="flex justify-between border-b pb-1"><span className="text-indigo-600">name</span> <span className="text-gray-400">TEXT</span></div>
-              <div className="flex justify-between border-b pb-1"><span className="text-indigo-600">legalEntityType</span> <span className="text-gray-400">TEXT</span></div>
-              <div className="flex justify-between border-b pb-1"><span className="text-indigo-600">groupRole</span> <span className="text-gray-400">TEXT</span></div>
-              <div className="flex justify-between border-b pb-1"><span className="text-indigo-600">registrationNumber</span> <span className="text-gray-400">TEXT</span></div>
-              <div className="flex justify-between border-b pb-1"><span className="text-indigo-600">incorporationDate</span> <span className="text-gray-400">DATE</span></div>
-              <div className="flex justify-between border-b pb-1"><span className="text-indigo-600">financialYearEnd</span> <span className="text-gray-400">TEXT</span></div>
+              <div className="flex justify-between border-b pb-1"><span className="text-indigo-600">legal_entity_type</span> <span className="text-gray-400">TEXT</span></div>
+              <div className="flex justify-between border-b pb-1"><span className="text-indigo-600">group_role</span> <span className="text-gray-400">TEXT</span></div>
+              <div className="flex justify-between border-b pb-1"><span className="text-indigo-600">registration_number</span> <span className="text-gray-400">TEXT</span></div>
+              <div className="flex justify-between border-b pb-1"><span className="text-indigo-600">incorporation_date</span> <span className="text-gray-400">DATE</span></div>
+              <div className="flex justify-between border-b pb-1"><span className="text-indigo-600">financial_year_end</span> <span className="text-gray-400">TEXT</span></div>
               <div className="flex justify-between border-b pb-1"><span className="text-indigo-600">owner_id</span> <span className="text-gray-400">UUID (FK)</span></div>
-              <div className="flex justify-between border-b pb-1"><span className="text-indigo-600">createdAt</span> <span className="text-gray-400">TIMESTAMPTZ</span></div>
+              <div className="flex justify-between border-b pb-1"><span className="text-indigo-600">created_at</span> <span className="text-gray-400">TIMESTAMPTZ</span></div>
             </div>
           </div>
         </section>

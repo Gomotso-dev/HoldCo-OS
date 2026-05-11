@@ -18,14 +18,11 @@ export async function logActivity(params: {
     const { error } = await supabase
       .from('activity_log')
       .insert([{
-        userId: user.id,
         owner_id: user.id,
-        eventType: params.eventType,
-        entityType: params.entityType,
-        entityId: params.entityId,
+        action_type: params.eventType,
         description: params.description,
-        companyId: params.companyId,
-        createdAt: timestamp
+        company_id: params.companyId,
+        created_at: timestamp
       }]);
 
     if (error) console.error('Error logging activity:', error.message);
