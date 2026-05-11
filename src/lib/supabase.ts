@@ -8,6 +8,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // Initialize with placeholders if missing to prevent module-level throw that crashes the whole app
+export const isSupabaseConfigured = !!(supabaseUrl && supabaseUrl !== 'https://placeholder.supabase.co');
+
 export const supabase = createClient(
   supabaseUrl || 'https://placeholder.supabase.co',
   supabaseAnonKey || 'placeholder'
