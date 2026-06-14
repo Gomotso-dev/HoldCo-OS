@@ -42,7 +42,7 @@ import {
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 import { SafeChart } from '../components/SafeChart';
-import { logActivity } from '../lib/activity';
+import { ActivityLogService } from '../services/activityLogService';
 import { FinanceTransaction, Company, TransactionType, Document } from '../types';
 import { format, subDays, startOfMonth, startOfQuarter, startOfYear, isWithinInterval } from 'date-fns';
 
@@ -301,7 +301,7 @@ export default function Finance() {
       if (error) throw error;
 
       if (data) {
-          logActivity({
+          ActivityLogService.logActivity({
             action_type: isEditMode ? 'finance_updated' : 'finance_created',
             description: isEditMode 
               ? `Updated ${data.type.toLowerCase()}: R ${data.amount.toLocaleString()} - ${data.description}`
@@ -330,7 +330,7 @@ export default function Finance() {
 
       if (error) throw error;
 
-      logActivity({
+      ActivityLogService.logActivity({
         action_type: 'finance_deleted',
         description: `Deleted transaction: ${txToDelete.description}`,
         company_id: txToDelete.company_id

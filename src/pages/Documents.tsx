@@ -266,7 +266,7 @@ export default function Documents() {
           issue_date: formData.issue_date || null,
           expiry_date: formData.expiry_date || null,
           owner_id: user.id,
-          uploaded_by: user.email,
+          uploaded_by: user.id,
           version_number: 1,
           created_at: timestamp,
           updated_at: timestamp

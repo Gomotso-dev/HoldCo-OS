@@ -288,7 +288,7 @@ export default function Compliance() {
       if (error) throw error;
 
       await ActivityLogService.logActivity({
-        action_type: 'compliance_updated',
+        action_type: 'compliance_deleted',
         description: `Deleted compliance record: ${itemToDelete.title}`,
         company_id: itemToDelete.company_id
       });
@@ -781,7 +781,7 @@ export default function Compliance() {
                                       "text-xs font-black tabular-nums",
                                       item.status === 'Overdue' ? "text-red-600" : "text-gray-900"
                                    )}>
-                                      {formatDate(item.dueDate)}
+                                      {formatDate(item.due_date)}
                                    </p>
                                    <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">DEADLINE</p>
                                 </div>
@@ -1006,8 +1006,8 @@ export default function Compliance() {
                     <select
                       required
                       className="w-full px-5 py-3.5 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-600 transition-all font-bold text-gray-900 text-sm"
-                      value={formData.companyId}
-                      onChange={e => setFormData({ ...formData, companyId: e.target.value })}
+                      value={formData.company_id}
+                      onChange={e => setFormData({ ...formData, company_id: e.target.value })}
                     >
                       <option value="">Select Company</option>
                       {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}

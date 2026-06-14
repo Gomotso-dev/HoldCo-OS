@@ -11,9 +11,10 @@ import Documents from './pages/Documents';
 import Compliance from './pages/Compliance';
 import Finance from './pages/Finance';
 import Activity from './pages/Activity';
+import LandingPage from './pages/LandingPage';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
-import LandingPage from './pages/LandingPage';
+
 import Documentation from './pages/Documentation';
 import ComplianceReport from './pages/ComplianceReport';
 

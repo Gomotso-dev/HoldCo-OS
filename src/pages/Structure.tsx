@@ -362,8 +362,8 @@ export default function Structure() {
                       <label className="text-sm font-semibold text-gray-700">Parent Company</label>
                       <select
                         required
-                        value={relForm.parentCompanyId}
-                        onChange={(e) => setRelForm({ ...relForm, parentCompanyId: e.target.value })}
+                        value={relForm.parent_company_id}
+                        onChange={(e) => setRelForm({ ...relForm, parent_company_id: e.target.value })}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
                       >
                         <option value="">Select Parent</option>
@@ -377,8 +377,8 @@ export default function Structure() {
                       <label className="text-sm font-semibold text-gray-700">Child / Subsidiary</label>
                       <select
                         required
-                        value={relForm.childCompanyId}
-                        onChange={(e) => setRelForm({ ...relForm, childCompanyId: e.target.value })}
+                        value={relForm.child_company_id}
+                        onChange={(e) => setRelForm({ ...relForm, child_company_id: e.target.value })}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
                       >
                         <option value="">Select Child</option>
@@ -397,8 +397,8 @@ export default function Structure() {
                           min="0"
                           max="100"
                           step="0.01"
-                          value={relForm.ownershipPercentage}
-                          onChange={(e) => setRelForm({ ...relForm, ownershipPercentage: parseFloat(e.target.value) })}
+                          value={relForm.ownership_percentage}
+                          onChange={(e) => setRelForm({ ...relForm, ownership_percentage: parseFloat(e.target.value) })}
                           className="w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all font-mono"
                         />
                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">%</span>
@@ -409,8 +409,8 @@ export default function Structure() {
                       <label className="text-sm font-semibold text-gray-700">Relationship Type</label>
                       <select
                         required
-                        value={relForm.relationshipType}
-                        onChange={(e) => setRelForm({ ...relForm, relationshipType: e.target.value })}
+                        value={relForm.relationship_type}
+                        onChange={(e) => setRelForm({ ...relForm, relationship_type: e.target.value })}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
                       >
                         <option value="Holding Company">Holding Company</option>
@@ -426,8 +426,8 @@ export default function Structure() {
                       <input
                         type="date"
                         required
-                        value={relForm.effectiveDate}
-                        onChange={(e) => setRelForm({ ...relForm, effectiveDate: e.target.value })}
+                        value={relForm.effective_date}
+                        onChange={(e) => setRelForm({ ...relForm, effective_date: e.target.value })}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
                       />
                     </div>
@@ -474,8 +474,8 @@ export default function Structure() {
                     <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Existing Relationships</h4>
                     <div className="space-y-3">
                       {relationships.map((rel) => {
-                        const parent = companies.find(c => c.id === rel.parentCompanyId);
-                        const child = companies.find(c => c.id === rel.childCompanyId);
+                        const parent = companies.find(c => c.id === rel.parent_company_id);
+                        const child = companies.find(c => c.id === rel.child_company_id);
                         return (
                           <div key={rel.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 group">
                             <div className="flex items-center space-x-4">
@@ -484,7 +484,7 @@ export default function Structure() {
                                 <span className="mx-2 text-gray-400">→</span>
                                 <span className="font-bold text-gray-900">{child?.name || 'Unknown'}</span>
                                 <div className="text-[10px] uppercase font-bold text-indigo-600 mt-1">
-                                  {rel.ownershipPercentage}% • {rel.relationshipType}
+                                  {rel.ownership_percentage}% • {rel.relationship_type}
                                 </div>
                               </div>
                             </div>

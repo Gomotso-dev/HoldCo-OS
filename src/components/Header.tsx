@@ -74,7 +74,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
       const { data: compliance } = await supabase
         .from('compliance')
-        .select('*, companies!companyId ( name )')
+        .select('*, companies!company_id ( name )')
         .eq('owner_id', user.id);
 
       if (compliance) {
@@ -83,11 +83,11 @@ export default function Header({ onMenuClick }: HeaderProps) {
         threeDaysLater.setDate(now.getDate() + 3);
 
         const urgentNotifs = (compliance as any[]).map(item => {
-          const dueDate = new Date(item.dueDate || item.due_date);
+          const dueDate = new Date(item.due_date);
           const isOverdue = item.status === 'Overdue' || (dueDate < now && item.status !== 'Completed');
           const isDueToday = dueDate.toDateString() === now.toDateString();
           const isDueSoon = dueDate > now && dueDate <= threeDaysLater;
-          const isMissingDocs = item.status !== 'Completed' && item.required_documents?.length > 0 && !item.linkedDocumentId;
+          const isMissingDocs = item.status !== 'Completed' && item.required_documents?.length > 0 && !item.linked_document_id;
 
           if (isOverdue || isDueToday || isDueSoon || isMissingDocs) {
             return {
@@ -95,7 +95,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
               title: item.title,
               company: item.companies?.name || 'Unknown Company',
               type: isOverdue ? 'overdue' : isDueToday ? 'today' : isDueSoon ? 'soon' : 'missing_docs',
-              dueDate: item.dueDate || item.due_date,
+              due_date: item.due_date,
               url: `/compliance?id=${item.id}`
             };
           }
@@ -126,9 +126,9 @@ export default function Header({ onMenuClick }: HeaderProps) {
       if (!user) return;
 
       const [companiesRes, complianceRes, documentsRes] = await Promise.all([
-        supabase.from('companies').select('*').eq('owner_id', user.id).or(`name.ilike.%${searchQuery}%,registrationNumber.ilike.%${searchQuery}%`).limit(5),
-        supabase.from('compliance').select('*, companies!companyId ( name )').eq('owner_id', user.id).or(`title.ilike.%${searchQuery}%,type.ilike.%${searchQuery}%,category.ilike.%${searchQuery}%`).limit(5),
-        supabase.from('documents').select('*, companies!companyId ( name )').eq('owner_id', user.id).or(`title.ilike.%${searchQuery}%,category.ilike.%${searchQuery}%`).limit(5)
+        supabase.from('companies').select('*').eq('owner_id', user.id).or(`name.ilike.%${searchQuery}%,registration_number.ilike.%${searchQuery}%`).limit(5),
+        supabase.from('compliance').select('*, companies!company_id ( name )').eq('owner_id', user.id).or(`title.ilike.%${searchQuery}%,type.ilike.%${searchQuery}%,category.ilike.%${searchQuery}%`).limit(5),
+        supabase.from('documents').select('*, companies!company_id ( name )').eq('owner_id', user.id).or(`title.ilike.%${searchQuery}%,category.ilike.%${searchQuery}%`).limit(5)
       ]);
 
       setSearchResults({
@@ -239,7 +239,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                                 <Building2 className="h-4 w-4 text-gray-400 group-hover:text-indigo-600 mr-3" />
                                 <div>
                                   <p className="text-sm font-bold text-gray-900 leading-tight">{c.name}</p>
-                                  <p className="text-[10px] text-gray-400 font-mono">{c.registrationNumber}</p>
+                                  <p className="text-[10px] text-gray-400 font-mono">{c.registration_number}</p>
                                 </div>
                               </button>
                             ))}
@@ -357,7 +357,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                                   "text-[9px] font-black uppercase tracking-tighter mt-1",
                                   n.type === 'overdue' ? "text-red-500" : "text-gray-400"
                                 )}>
-                                  {n.type === 'overdue' ? 'Overdue Action' : n.type === 'today' ? 'Due Today' : n.type === 'soon' ? `Due ${formatDate(n.dueDate)}` : 'Missing Evidence'}
+                                  {n.type === 'overdue' ? 'Overdue Action' : n.type === 'today' ? 'Due Today' : n.type === 'soon' ? `Due ${formatDate(n.due_date)}` : 'Missing Evidence'}
                                 </p>
                               </div>
                             </button>

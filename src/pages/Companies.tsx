@@ -140,9 +140,9 @@ export default function Companies() {
           .insert([{
             company_id: data.id,
             owner_id: user.id,
-            vat_registered: false,
-            paye_registered: false,
-            uif_registered: false,
+            is_vat_registered: false,
+            is_paye_registered: false,
+            is_uif_registered: false,
             has_employees: false
           }]);
 
@@ -151,7 +151,7 @@ export default function Companies() {
         } else {
           // 2. Generate initial compliance items
           try {
-            const taxProfile = { vat_registered: false, paye_registered: false, uif_registered: false };
+            const taxProfile = { is_vat_registered: false, is_paye_registered: false, is_uif_registered: false };
             await ComplianceEngine.generateComplianceForCompany(data, taxProfile);
           } catch (compError: any) {
             console.warn('[AddCompany] Auto compliance generation failed:', compError.message);
@@ -206,7 +206,7 @@ export default function Companies() {
       if (error) throw error;
 
       await ActivityLogService.logActivity({
-        action_type: 'company_updated' as any,
+        action_type: 'company_deleted',
         description: `Deleted company: ${companyToDelete.name}`,
         company_id: companyToDelete.id
       });

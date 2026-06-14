@@ -1,12 +1,14 @@
 import { supabase } from '../lib/supabase';
 
 export type ActionType = 
-  | 'company_created' 
-  | 'company_updated' 
-  | 'compliance_generated' 
-  | 'compliance_completed' 
+  | 'company_created'
+  | 'company_updated'
+  | 'company_deleted'
+  | 'compliance_generated'
+  | 'compliance_completed'
   | 'compliance_created'
   | 'compliance_updated'
+  | 'compliance_deleted'
   | 'document_uploaded' 
   | 'document_linked' 
   | 'document_viewed'
@@ -17,7 +19,10 @@ export type ActionType =
   | 'report_exported'
   | 'report_printed'
   | 'settings_updated'
-  | 'record_created';
+  | 'record_created'
+  | 'finance_created'
+  | 'finance_updated'
+  | 'finance_deleted';
 
 export interface ActivityLog {
   id: string;

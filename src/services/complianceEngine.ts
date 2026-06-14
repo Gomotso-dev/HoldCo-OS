@@ -136,12 +136,12 @@ export class ComplianceEngine {
   static async generateComplianceForCompany(company: any, taxProfile: any) {
     const matchedTemplates = SouthAfricanComplianceTemplates.filter(template => {
       // Check company type
-      const typeMatch = template.applies_to_company_types.includes(company.legalEntityType);
+      const typeMatch = template.applies_to_company_types.includes(company.legal_entity_type);
       if (!typeMatch) return false;
       // Check specific flags
-      if (template.name.includes('PAYE') && !taxProfile.paye_registered) return false;
-      if (template.name.includes('VAT') && !taxProfile.vat_registered) return false;
-      if (template.name.includes('UIF') && !taxProfile.uif_registered) return false;
+      if (template.name.includes('PAYE') && !taxProfile.is_paye_registered) return false;
+      if (template.name.includes('VAT') && !taxProfile.is_vat_registered) return false;
+      if (template.name.includes('UIF') && !taxProfile.is_uif_registered) return false;
 
       return true;
     });
@@ -149,30 +149,30 @@ export class ComplianceEngine {
     // Fetch existing items to avoid duplicates
     const { data: existingItems } = await supabase
       .from('compliance')
-      .select('title, dueDate')
-      .eq('companyId', company.id);
+      .select('title, due_date')
+      .eq('company_id', company.id);
 
     const itemsToCreate = matchedTemplates.map(template => {
       const dueDate = this.calculateDueDate(template, {
-        registrationDate: company.incorporationDate,
-        financialYearEnd: company.financialYearEnd
+        registrationDate: company.incorporation_date,
+        financialYearEnd: company.financial_year_end
       });
 
       // Check if duplicate exists
-      const isDuplicate = existingItems?.some(item => 
-        item.title === template.name && 
-        format(parseISO(item.dueDate), 'yyyy-MM-dd') === format(dueDate, 'yyyy-MM-dd')
+      const isDuplicate = existingItems?.some(item =>
+        item.title === template.name &&
+        format(parseISO(item.due_date), 'yyyy-MM-dd') === format(dueDate, 'yyyy-MM-dd')
       );
 
       if (isDuplicate) return null;
 
       return {
-        companyId: company.id,
+        company_id: company.id,
         owner_id: company.owner_id,
         title: template.name,
         type: template.type,
         category: template.type,
-        dueDate: dueDate.toISOString(),
+        due_date: dueDate.toISOString(),
         status: 'Pending',
         priority: template.penalty_risk_level === 'High' ? 'High' : 'Medium',
         risk_level: template.penalty_risk_level,
@@ -185,9 +185,9 @@ export class ComplianceEngine {
       if (error) throw error;
 
       await ActivityLogService.logActivity({
-        actionType: 'compliance_generated' as any,
+        action_type: 'compliance_generated',
         description: `Generated ${itemsToCreate.length} compliance items for ${company.name}`,
-        companyId: company.id,
+        company_id: company.id,
         metadata: { items_count: itemsToCreate.length }
       });
 
@@ -202,12 +202,12 @@ export class ComplianceEngine {
    */
   static getPreview(company: any, taxProfile: any) {
     return SouthAfricanComplianceTemplates.filter(template => {
-      const typeMatch = template.applies_to_company_types.includes(company.legalEntityType);
+      const typeMatch = template.applies_to_company_types.includes(company.legal_entity_type);
       if (!typeMatch) return false;
 
-      if (template.name.includes('PAYE') && !taxProfile.paye_registered) return false;
-      if (template.name.includes('VAT') && !taxProfile.vat_registered) return false;
-      if (template.name.includes('UIF') && !taxProfile.uif_registered) return false;
+      if (template.name.includes('PAYE') && !taxProfile.is_paye_registered) return false;
+      if (template.name.includes('VAT') && !taxProfile.is_vat_registered) return false;
+      if (template.name.includes('UIF') && !taxProfile.is_uif_registered) return false;
 
       return true;
     });

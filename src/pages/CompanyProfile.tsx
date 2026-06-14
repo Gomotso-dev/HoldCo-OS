@@ -32,12 +32,19 @@ import { supabase } from '../lib/supabase';
 import { ActivityLogService } from '../services/activityLogService';
 
 // standardized logging helper using snake_case fields
-const logCompanyActivity = (params: { eventType: 'create' | 'update' | 'delete', description: string, companyId?: string }) => 
-  ActivityLogService.logActivity({ 
-    action_type: (params.eventType === 'create' ? 'company_created' : 'company_updated') as any, 
-    description: params.description, 
+const logCompanyActivity = (params: { eventType: 'create' | 'update' | 'delete', description: string, companyId?: string }) => {
+  const actionTypeMap = {
+    create: 'company_created',
+    update: 'company_updated',
+    delete: 'company_deleted'
+  } as const;
+
+  return ActivityLogService.logActivity({
+    action_type: actionTypeMap[params.eventType],
+    description: params.description,
     company_id: params.companyId
   });
+};
 import { Company, ComplianceItem, Document, FinanceTransaction, Shareholder, Director, ActivityLog, BeneficialOwner, CompanyLegalType, CompanyGroupRole, CompanyStatus } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
 import { EmptyState } from '../components/EmptyState';

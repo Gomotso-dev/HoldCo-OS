@@ -31,7 +31,7 @@ export class ComplianceScoreService {
       // 1. Fetch all pending and overdue compliance items
       const { data: items, error } = await supabase
         .from('compliance')
-        .select('title, dueDate, status, priority, risk_level, required_documents, companyId')
+        .select('title, due_date, status, priority, risk_level, required_documents, company_id')
         .eq('owner_id', userId)
         .neq('status', 'Completed');
 
@@ -93,7 +93,7 @@ export class ComplianceScoreService {
     }
 
     items.forEach(item => {
-      const dueDateStr = item.dueDate || item.due_date;
+      const dueDateStr = item.due_date;
       if (!dueDateStr) return;
       
       const dueDate = parseISO(dueDateStr);
@@ -126,7 +126,7 @@ export class ComplianceScoreService {
     const finalScore = Math.max(0, score);
 
     await ActivityLogService.logActivity({
-      actionType: 'score_calculated' as any,
+      action_type: 'score_calculated',
       description: `Compliance health score recalculated: ${finalScore}%`,
       metadata: { score: finalScore, label: this.getLabel(finalScore) }
     });

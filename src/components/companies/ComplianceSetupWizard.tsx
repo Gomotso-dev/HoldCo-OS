@@ -40,23 +40,29 @@ export function ComplianceSetupWizard({ company, isOpen, onClose, onComplete }: 
 
   // Step 2: Tax Questions
   const [taxProfile, setTaxProfile] = useState({
-    vat_registered: false,
-    paye_registered: false,
-    uif_registered: false,
+    is_vat_registered: false,
+    is_paye_registered: false,
+    is_uif_registered: false,
     has_employees: false
   });
 
   // Step 3: Preview
   const [previewItems, setPreviewItems] = useState<ComplianceTemplate[]>([]);
 
+  function buildCompanyInput(details: typeof basicDetails) {
+    return {
+      ...company,
+      name: details.name,
+      registration_number: details.registrationNumber,
+      incorporation_date: details.incorporationDate,
+      financial_year_end: details.financialYearEnd,
+      legal_entity_type: details.legalEntityType,
+    };
+  }
+
   useEffect(() => {
     if (step === 3) {
-      const preview = ComplianceEngine.getPreview({
-        ...company,
-        legal_entity_type: basicDetails.legalEntityType,
-        incorporation_date: basicDetails.incorporationDate,
-        financial_year_end: basicDetails.financialYearEnd
-      } as any, taxProfile);
+      const preview = ComplianceEngine.getPreview(buildCompanyInput(basicDetails), taxProfile);
       setPreviewItems(preview);
     }
   }, [step, company, basicDetails, taxProfile]);
@@ -72,9 +78,9 @@ export function ComplianceSetupWizard({ company, isOpen, onClose, onComplete }: 
       
       if (data) {
         setTaxProfile({
-          vat_registered: data.vat_registered,
-          paye_registered: data.paye_registered,
-          uif_registered: data.uif_registered,
+          is_vat_registered: data.is_vat_registered,
+          is_paye_registered: data.is_paye_registered,
+          is_uif_registered: data.is_uif_registered,
           has_employees: data.has_employees
         });
       }
@@ -118,13 +124,7 @@ export function ComplianceSetupWizard({ company, isOpen, onClose, onComplete }: 
       if (profileError) throw profileError;
 
       // 3. Generate Compliance Items
-      await ComplianceEngine.generateComplianceForCompany({
-        ...company,
-        ...basicDetails,
-        legal_entity_type: basicDetails.legalEntityType,
-        incorporation_date: basicDetails.incorporationDate,
-        financial_year_end: basicDetails.financialYearEnd
-      } as any, taxProfile);
+      await ComplianceEngine.generateComplianceForCompany(buildCompanyInput(basicDetails), taxProfile);
 
       // 4. Log Activity
       await ActivityLogService.logActivity({
@@ -264,10 +264,10 @@ export function ComplianceSetupWizard({ company, isOpen, onClose, onComplete }: 
 
                 <div className="grid grid-cols-1 gap-4">
                   {[
-                    { label: 'Is this company registered for VAT?', key: 'vat_registered' },
-                    { label: 'Is this company registered for PAYE?', key: 'paye_registered' },
+                    { label: 'Is this company registered for VAT?', key: 'is_vat_registered' },
+                    { label: 'Is this company registered for PAYE?', key: 'is_paye_registered' },
                     { label: 'Does this company have employees?', key: 'has_employees' },
-                    { label: 'Is this company registered for UIF?', key: 'uif_registered' }
+                    { label: 'Is this company registered for UIF?', key: 'is_uif_registered' }
                   ].map((q) => (
                     <div 
                       key={q.key}
